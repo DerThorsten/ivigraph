@@ -1140,7 +1140,7 @@ fclib.registerNodeType(Paint ,[('Image-Paint',)])
 
 ###################################################
 #
-#   structureTensorEigenvalues
+#   structureTensorTrace
 #
 ###################################################
 class StructureTensorTrace(CtrlNode):
@@ -1174,7 +1174,11 @@ class StructureTensorTrace(CtrlNode):
 fclib.registerNodeType(StructureTensorTrace ,[('Image-Tensors',)])
 
 
-
+###################################################
+#
+#   TensorTrace
+#
+###################################################
 class TensorTrace(CtrlNode):
     """ calculate trace of tensor input """
     nodeName = "TensorTrace"
@@ -1200,3 +1204,54 @@ class TensorTrace(CtrlNode):
 
 
 fclib.registerNodeType(TensorTrace, [('Image-Tensors',)])
+
+
+
+###################################################
+#
+#   Blender
+#
+###################################################
+class Blender(CtrlNode):
+    """ blend images (weighted), normalize, if neccessary """
+    nodeName = "Blender"
+
+    uiTemplate=[('normalize', 'combo', {'values': ['0', '1', '255']}),
+                ('weight', 'spin', {'value' : 0.5, 'step' : 0.05, 'range': [0.0, 1.0]})]
+
+    def __init__(self, name):
+        terminals = {
+            'Image1': dict(io='in'),
+            'Image2': dict(io='in'),
+            'BlendedImage': dict(io='out')
+        }
+        CtrlNode.__init__(self, name, terminals=terminals)
+    def process(self, Image1, Image2, display=True):
+        if Image1 is None or Image2 is None:
+            return {'BlendedImage': numpy.zeros((0,0))}
+        if len(Image1.shape) == 2:
+            Image1 = Image1[..., numpy.newaxis]
+            Image1.axistags = vigra.VigraArray.defaultAxistags(3)
+        if len(Image2.shape) == 2:
+            Image2 = Image2[..., numpy.newaxis]
+            Image2.axistags = vigra.VigraArray.defaultAxistags(3)
+        if Image1.shape[:2] != Image2.shape[:2]:
+            raise Exception("Image dimensions disagree!")
+        if Image1.shape[2] == 1 and Image2.shape[2] == 3:
+            Image1 = numpy.repeat(Image1, 3, axis=2)
+        elif Image1.shape[2] == 3 and Image2.shape[2] == 1:
+            Image2 = numpy.repeat(Image2, 3, axis=2)
+        if Image1.shape[2] != Image2.shape[2]:
+            raise Exception("Image channels disagree!")
+
+        normalization = int(self.ctrls['normalize'].currentText())
+        if normalization > 0:
+            Image1 = _normalize(Image1, 0, normalization)
+            Image2 = _normalize(Image2, 0, normalization)
+        weight = self.ctrls['weight'].value()
+        return {'BlendedImage': weight*Image1 + (1-weight)*Image2}
+
+
+fclib.registerNodeType(Blender, [('Operators',)])
+
+    
