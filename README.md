@@ -5,7 +5,7 @@ ivigraph and interactive version of vigranumpy with a labView-ish gui for image 
 
 Version
 =============
-0.01 - alpha
+0.02 - alpha
 
 Quickstart:
 ============
