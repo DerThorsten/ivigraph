@@ -564,7 +564,7 @@ def _kammlinie(img,extrema):
 
 
 node = vigraNode(
-    nodeName="MinLines",
+    nodeName="ExtremaLines",
     uiTemplate=[
         ('extrema', 'combo', {'values': ['min', 'max'], 'index': 0})
     ],
