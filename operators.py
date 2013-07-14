@@ -847,7 +847,7 @@ class Selector(CtrlNode):
         else:
             return {'dataOut': B} 
 
-
+"""
 node = vigraNode(
     nodeName="selctor2",
     uiTemplate=[
@@ -855,6 +855,7 @@ node = vigraNode(
     ],
     f=_normalize
 )
+"""
 
 fclib.registerNodeType(Selector,[('Data-Selector',)])
 
