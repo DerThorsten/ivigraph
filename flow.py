@@ -96,9 +96,9 @@ hname = socket.gethostname()
 
 print "host name ",hname
 
-if hname=='tbeier-A780GM-A':
+if hname=='phils_name':
     data = vigra.readImage('/home/phil/Downloads/lena512.bmp')
-if hname=='YOUR_NAME':
+if hname=='tbeier-A780GM-A':
     data = vigra.readImage('/home/tbeier/Desktop/lena.bmp')
 data = data[:,:,:]
 #data = numpy.squeeze(data[:,:,0])
