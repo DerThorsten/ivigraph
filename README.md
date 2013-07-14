@@ -31,3 +31,4 @@ Known Bugs:
 Authors
 =============
 - Thorsten Beier
+- Philipp Hanslovsky
