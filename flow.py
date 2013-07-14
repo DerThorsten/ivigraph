@@ -92,13 +92,13 @@ win.show()
 #data[30:50, 30:50] += 15.0
 
 import socket
-sname = socket.gethostname()
+hname = socket.gethostname()
 
-print "socket name ",sname
+print "host name ",hname
 
-if sname='tbeier-A780GM-A':
+if hname='tbeier-A780GM-A':
     data = vigra.readImage('/home/phil/Downloads/lena512.bmp')
-if sname='YOUR_NAME':
+if hname='YOUR_NAME':
     data = vigra.readImage('/home/tbeier/Desktop/lena.bmp')
 data = data[:,:,:]
 #data = numpy.squeeze(data[:,:,0])
