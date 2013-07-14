@@ -91,7 +91,15 @@ win.show()
 #data[40:60, 40:60] += 15.0
 #data[30:50, 30:50] += 15.0
 
-data = vigra.readImage('/home/phil/Downloads/lena512.bmp')
+import socket
+sname = socket.gethostname()
+
+print "socket name ",sname
+
+if sname='tbeier-A780GM-A':
+    data = vigra.readImage('/home/phil/Downloads/lena512.bmp')
+if sname='YOUR_NAME':
+    data = vigra.readImage('/home/tbeier/Desktop/lena.bmp')
 data = data[:,:,:]
 #data = numpy.squeeze(data[:,:,0])
 vigra.filters.discMedian(data.astype(numpy.uint8),1)
