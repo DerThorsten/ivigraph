@@ -10,7 +10,11 @@ Version
 Quickstart:
 ============
 run flow.py (and change the "lena" path to an image of your choise).
-Cick on Flowchart-Button in the GUI and edit the graph
+Cick on Flowchart-Button in the GUI and edit the graph 
+
+- right click to add new operators 
+- del to remove connections ( unknown bug, this might lead to a floating point error for huge graphs)
+- connect operator to one of the four image viewers
 
 Dependencies:
 =============
