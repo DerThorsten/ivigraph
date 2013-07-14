@@ -26,7 +26,7 @@ Known Bugs:
 
 - save does not work with the default pyqtgraph version
 - load does not work with the patched version of pyqtgraph
-- floating point error when deleting edges (no idea what is going on)
+- sometimes one gets floating point error when deleting edges (no idea what is going on)
 
 Authors
 =============
