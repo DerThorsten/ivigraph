@@ -372,6 +372,65 @@ node = vigraNode(
 fclib.registerNodeType(node,[('Image-Tensors',)])
 
 
+class StructureTensorTrace(CtrlNode):
+    """ structure tensor trace"""
+    nodeName = "StructureTensorTrace"
+
+    uiTemplate=[('innerscale', 'spin', {'value': 1.5, 'step': 0.1, 'range': [0.01, None]}),
+                ('outerscale', 'spin', {'value': 2.5, 'step': 0.1, 'range': [0.01, None]})]
+    def __init__(self, name):
+        terminals = {
+            'Image': dict(io='in'),     
+            'dataOut': dict(io='out')  # to specify whether it is input or output
+        }                              # other more advanced options are available
+                                       # as well..
+        CtrlNode.__init__(self, name, terminals=terminals)
+    def process(self, Image, display=True):
+        tensorValues = vigra.filters.structureTensor(image=Image,
+                                                     innerScale = self.ctrls['innerscale'].value(),
+                                                     outerScale = self.ctrls['outerscale'].value())
+        out = numpy.zeros(tensorValues.shape[:2])
+        stepSize = math.sqrt(2*tensorValues.shape[2] + 0.25) - 0.5
+        assert stepSize == math.floor(stepSize)
+        index = 0
+        while (stepSize > 0):
+            out += tensorValues[..., index]
+            index += stepSize
+            stepSize -= 1
+        return {'dataOut': out}
+
+        
+fclib.registerNodeType(StructureTensorTrace ,[('Image-Tensors',)])
+
+
+
+class TensorTrace(CtrlNode):
+    """ calculate trace of tensor input """
+    nodeName = "TensorTrace"
+
+    def __init__(self, name):
+        terminals = {
+            'Tensor': dict(io='in'),
+            'dataOut': dict(io='out')
+        }
+
+        CtrlNode.__init__(self, name, terminals=terminals)
+    def process(self, Tensor, display=True):
+        assert len(Tensor.shape) == 3
+        out = numpy.zeros(Tensor.shape[:2])
+        stepSize = math.sqrt(2*Tensor.shape[2] + 0.25) - 0.5
+        assert stepSize == math.floor(stepSize)
+        index = 0
+        while (stepSize > 0):
+            out += Tensor[..., index]
+            index += stepSize
+            stepSize -= 1
+        return {'dataOut': out}
+
+
+fclib.registerNodeType(TensorTrace, [('Image-Tensors',)])
+
+
 
 #######################################################
 # 
@@ -1137,66 +1196,3 @@ class Paint(CtrlNode):
         
 fclib.registerNodeType(Paint ,[('Image-Paint',)])
 
-
-###################################################
-#
-#   structureTensorEigenvalues
-#
-###################################################
-class StructureTensorTrace(CtrlNode):
-    """ structure tensor trace"""
-    nodeName = "StructureTensorTrace"
-
-    uiTemplate=[('innerscale', 'spin', {'value': 1.5, 'step': 0.1, 'range': [0.01, None]}),
-                ('outerscale', 'spin', {'value': 2.5, 'step': 0.1, 'range': [0.01, None]})]
-    def __init__(self, name):
-        terminals = {
-            'Image': dict(io='in'),     
-            'dataOut': dict(io='out')  # to specify whether it is input or output
-        }                              # other more advanced options are available
-                                       # as well..
-        CtrlNode.__init__(self, name, terminals=terminals)
-    def process(self, Image, display=True):
-        tensorValues = vigra.filters.structureTensor(image=Image,
-                                                     innerScale = self.ctrls['innerscale'].value(),
-                                                     outerScale = self.ctrls['outerscale'].value())
-        out = numpy.zeros(tensorValues.shape[:2])
-        stepSize = math.sqrt(2*tensorValues.shape[2] + 0.25) - 0.5
-        assert stepSize == math.floor(stepSize)
-        index = 0
-        while (stepSize > 0):
-            out += tensorValues[..., index]
-            index += stepSize
-            stepSize -= 1
-        return {'dataOut': out}
-
-        
-fclib.registerNodeType(StructureTensorTrace ,[('Image-Tensors',)])
-
-
-
-class TensorTrace(CtrlNode):
-    """ calculate trace of tensor input """
-    nodeName = "TensorTrace"
-
-    def __init__(self, name):
-        terminals = {
-            'Tensor': dict(io='in'),
-            'dataOut': dict(io='out')
-        }
-
-        CtrlNode.__init__(self, name, terminals=terminals)
-    def process(self, Tensor, display=True):
-        assert len(Tensor.shape) == 3
-        out = numpy.zeros(Tensor.shape[:2])
-        stepSize = math.sqrt(2*Tensor.shape[2] + 0.25) - 0.5
-        assert stepSize == math.floor(stepSize)
-        index = 0
-        while (stepSize > 0):
-            out += Tensor[..., index]
-            index += stepSize
-            stepSize -= 1
-        return {'dataOut': out}
-
-
-fclib.registerNodeType(TensorTrace, [('Image-Tensors',)])
