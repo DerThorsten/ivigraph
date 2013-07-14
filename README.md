@@ -3,6 +3,9 @@ ivigraph
 
 ivigraph and interactive version of vigranumpy with a labView-ish gui for image processing operator  flow charts
 
+Version
+=============
+0.01 - alpha
 
 Quickstart:
 ============
@@ -11,8 +14,8 @@ Cick on Flowchart-Button in the GUI and edit the graph
 
 Dependencies:
 =============
-- vigranumpy
-- pyqtgraph
+- vigranumpy   http://hci.iwr.uni-heidelberg.de/vigra/  (Python and Boost Python Wrapped C++ Code)
+- pyqtgraph   http://www.pyqtgraph.org/   (pure Python)
 
 Known Bugs:
 =============
@@ -21,3 +24,6 @@ Known Bugs:
 - load does not work with the patched version of pyqtgraph
 - floating point error when deleting edges (no idea what is going on)
 
+Authors
+=============
+- Thorsten Beier
