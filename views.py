@@ -67,7 +67,12 @@ class MyImageItem(pg.ImageItem):
                 raise Exception("Unknown draw mode '%s'" % self.drawMode)
             self.updateImage()
 
-        self._viewNode.update()
+        #self._viewNode.update()
+
+        #for d in self._viewNode.dependentNodes():
+        #   d.update()
+
+
     def setDrawKernel(self, kernel=None, mask=None, center=(0,0), mode='add'):
         self.drawKernel = kernel
         self.drawKernelCenter = center
@@ -96,6 +101,11 @@ class ClickImageView(pg.ImageView):
 
     def keyPressEvent(self, ev):
         print ev.key()
+
+        if ev.key()  == QtCore.Qt.Key_U:
+            print "update dependentNodes"
+            for d in self._viewNode.dependentNodes():
+               d.update()
         if ev.key() == QtCore.Qt.Key_Space:
             if self.playRate == 0:
                 fps = (self.getProcessedImage().shape[0]-1) / (self.tVals[-1] - self.tVals[0])
@@ -151,7 +161,7 @@ class ClickImageView(pg.ImageView):
         ])
         self.imageItem.setDrawKernel(kern, mask=kern, center=(1,1), mode='add')
         self.imageItem.setLevels([0, 10])
-        self.imageItem._viewNode = viewNode
+        self._viewNode = viewNode
 
 
 
