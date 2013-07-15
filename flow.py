@@ -100,6 +100,8 @@ if hname=='Beethoven':
     data = vigra.readImage('/home/phil/Downloads/lena512.bmp')
 if hname=='tbeier-A780GM-A':
     data = vigra.readImage('/home/tbeier/Desktop/lena.bmp')
+if hname =='tbeier-vaio':
+   data = vigra.readImage('/home/tbeier/Desktop/lena.jpg')
 data = data[:,:,:]
 #data = numpy.squeeze(data[:,:,0])
 vigra.filters.discMedian(data.astype(numpy.uint8),1)
