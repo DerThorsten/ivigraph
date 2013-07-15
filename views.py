@@ -21,7 +21,7 @@ class MyImageItem(pg.ImageItem):
         print "non setter has been called"
 
     def drawAt(self, pos, ev=None):
-        print " drawing"
+        print " drawing label",self.currentLabel
         if self.labelImage is None:
             print "set up label image"
             self.labelImage = numpy.ones( [ self.image.shape[0],self.image.shape[1]])
@@ -53,12 +53,12 @@ class MyImageItem(pg.ImageItem):
             self.drawMode(dk, self.image, mask, ss, ts, ev)
         else:
             src = src[ss]
-            self.labelImage[ts]=100
+            self.labelImage[ts]=self.currentLabel
             if self.drawMode == 'set':
                 if mask is not None:
                     mask = mask[ss]
                     self.image[ts] = self.image[ts] * (1-mask) + src * mask
-                    self.labelImage[ts]=100
+                    self.labelImage[ts]=self.currentLabel
                 else:
                     self.image[ts] = src
             elif self.drawMode == 'add':
@@ -84,6 +84,9 @@ class ClickImageView(pg.ImageView):
     def __init__(self,*args,**kwargs):
         super(ClickImageView, self).__init__(imageItem=MyImageItem())
         self.clicks=[]
+        self.imageItem
+        self.currentLabel=1
+        self.imageItem.currentLabel=1
     def keyReleaseEvent(self, ev):
         if ev.key() in [QtCore.Qt.Key_Space, QtCore.Qt.Key_Home, QtCore.Qt.Key_End]:
             ev.accept()
@@ -102,10 +105,47 @@ class ClickImageView(pg.ImageView):
     def keyPressEvent(self, ev):
         print ev.key()
 
+
+
         if ev.key()  == QtCore.Qt.Key_U:
             print "update dependentNodes"
             for d in self._viewNode.dependentNodes():
                d.update()
+
+        if ev.key()  == QtCore.Qt.Key_0:
+            self.currentLabel = 0
+            self.imageItem.currentLabel = 0 
+        if ev.key()  == QtCore.Qt.Key_1:
+            self.currentLabel = 1
+            self.imageItem.currentLabel = 1
+        if ev.key()  == QtCore.Qt.Key_2:
+           self.currentLabel  = 2
+           self.imageItem.currentLabel = 2
+        if ev.key()  == QtCore.Qt.Key_3:
+           self.currentLabel  = 3
+           self.imageItem.currentLabel = 3
+        if ev.key()  == QtCore.Qt.Key_4:
+           self.currentLabel  = 4
+           self.imageItem.currentLabel = 4
+        if ev.key()  == QtCore.Qt.Key_5:
+           self.currentLabel  = 5
+           self.imageItem.currentLabel = 5
+        if ev.key()  == QtCore.Qt.Key_6:
+           self.currentLabel  = 6
+           self.imageItem.currentLabel = 6
+        if ev.key()  == QtCore.Qt.Key_7:
+           self.currentLabel  = 7
+           self.imageItem.currentLabel = 7
+        if ev.key()  == QtCore.Qt.Key_8:
+           self.currentLabel  = 8
+           self.imageItem.currentLabel = 8
+        if ev.key()  == QtCore.Qt.Key_9:
+           self.currentLabel  = 9
+           self.imageItem.currentLabel = 9
+
+
+        print "CURRENT LABEL ",self.currentLabel
+
         if ev.key() == QtCore.Qt.Key_Space:
             if self.playRate == 0:
                 fps = (self.getProcessedImage().shape[0]-1) / (self.tVals[-1] - self.tVals[0])
