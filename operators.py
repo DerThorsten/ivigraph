@@ -1223,11 +1223,11 @@ class Blender(CtrlNode):
         if Image1 is None or Image2 is None:
             return {'BlendedImage': numpy.zeros((0,0))}
         if len(Image1.shape) == 2:
-            Image1 = Image1[..., numpy.newaxis]
-            Image1.axistags = vigra.VigraArray.defaultAxistags(3)
+            Image1 = vigra.VigraArray(Image1[..., numpy.newaxis],
+                                      axistags = vigra.VigraArray.defaultAxistags(3))
         if len(Image2.shape) == 2:
-            Image2 = Image2[..., numpy.newaxis]
-            Image2.axistags = vigra.VigraArray.defaultAxistags(3)
+            Image2 = vigra.VigraArray(Image2[..., numpy.newaxis],
+                                      axistags = vigra.VigraArray.defaultAxistags(3))
         if Image1.shape[:2] != Image2.shape[:2]:
             raise Exception("Image dimensions disagree!")
         if Image1.shape[2] == 1 and Image2.shape[2] == 3:
