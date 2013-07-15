@@ -129,7 +129,7 @@ v3Node = fc.createNode('ImageView', pos=(450, -150))
 v3Node.setView(v4)
 
 
-fNode = fc.createNode('NonLinearDiffusion', pos=(0, 0))
+fNode = fc.createNode('GaussianGradientMagnitude', pos=(0, 0))
 fc.connectTerminals(fc['dataIn'], fNode['dataIn'])
 fc.connectTerminals(fc['dataIn'], v1Node['data'])
 #fc.connectTerminals(v1Node['view'], fNode['view'])

@@ -8,10 +8,76 @@ import scipy.ndimage
 import vigra
 
 
+import numpy as np
+import collections
+
+
+class MyImageItem(pg.ImageItem):
+    def __init__(self,*args,**kwargs):
+        super(MyImageItem, self).__init__(*args,**kwargs)
+        self.clicks=[]
+
+        self.labelImage = None 
+        print "non setter has been called"
+
+    def drawAt(self, pos, ev=None):
+        print " drawing"
+        if self.labelImage is None:
+            print "set up label image"
+            self.labelImage = numpy.ones( [ self.image.shape[0],self.image.shape[1]])
+        pos = [int(pos.x()), int(pos.y())]
+        dk = self.drawKernel
+        kc = self.drawKernelCenter
+        sx = [0,dk.shape[0]]
+        sy = [0,dk.shape[1]]
+        tx = [pos[0] - kc[0], pos[0] - kc[0]+ dk.shape[0]]
+        ty = [pos[1] - kc[1], pos[1] - kc[1]+ dk.shape[1]]
+        
+        for i in [0,1]:
+            dx1 = -min(0, tx[i])
+            dx2 = min(0, self.image.shape[0]-tx[i])
+            tx[i] += dx1+dx2
+            sx[i] += dx1+dx2
+
+            dy1 = -min(0, ty[i])
+            dy2 = min(0, self.image.shape[1]-ty[i])
+            ty[i] += dy1+dy2
+            sy[i] += dy1+dy2
+
+        ts = (slice(tx[0],tx[1]), slice(ty[0],ty[1]))
+        ss = (slice(sx[0],sx[1]), slice(sy[0],sy[1]))
+        mask = self.drawMask
+        src = dk
+        
+        if isinstance(self.drawMode, collections.Callable):
+            self.drawMode(dk, self.image, mask, ss, ts, ev)
+        else:
+            src = src[ss]
+            self.labelImage[ts]=100
+            if self.drawMode == 'set':
+                if mask is not None:
+                    mask = mask[ss]
+                    self.image[ts] = self.image[ts] * (1-mask) + src * mask
+                    self.labelImage[ts]=100
+                else:
+                    self.image[ts] = src
+            elif self.drawMode == 'add':
+                self.image[ts] += src
+            else:
+                raise Exception("Unknown draw mode '%s'" % self.drawMode)
+            self.updateImage()
+
+        self._viewNode.update()
+    def setDrawKernel(self, kernel=None, mask=None, center=(0,0), mode='add'):
+        self.drawKernel = kernel
+        self.drawKernelCenter = center
+        self.drawMode = mode
+        self.drawMask = mask
+
 
 class ClickImageView(pg.ImageView):
     def __init__(self,*args,**kwargs):
-        super(ClickImageView, self).__init__(*args,**kwargs)
+        super(ClickImageView, self).__init__(imageItem=MyImageItem())
         self.clicks=[]
     def keyReleaseEvent(self, ev):
         if ev.key() in [QtCore.Qt.Key_Space, QtCore.Qt.Key_Home, QtCore.Qt.Key_End]:
@@ -55,6 +121,7 @@ class ClickImageView(pg.ImageView):
         else:
             QtGui.QWidget.keyPressEvent(self, ev)
 
+    """
     def mousePressEvent(self, event):
         if self.image is None:
             return
@@ -72,9 +139,21 @@ class ClickImageView(pg.ImageView):
                     assert False
                 else :
                     self.clicks.append((sx,sy))
-
             else :
                 pass
+    """
+    def enableLabelMode(self,viewNode):
+        
+        kern = numpy.array([
+            [255, 255, 255],
+            [255, 255, 255],
+            [255, 255, 255]
+        ])
+        self.imageItem.setDrawKernel(kern, mask=kern, center=(1,1), mode='add')
+        self.imageItem.setLevels([0, 10])
+        self.imageItem._viewNode = viewNode
+
+
 
 
 ## At this point, we need some custom Node classes since those provided in the library
@@ -101,13 +180,14 @@ class ImageViewNode(CtrlNode):
                             terminals={
                                 'data'  : {'io':'in'},
                                 'data2' : {'io':'in'},
-                                'view': {'io':'out'}
+                                'view':    {'io':'out'},
+                                'labelImage':{'io':'out'}
                             }
         )
 
     def setView(self, view):  ## setView must be called by the program
         self.view = view
-        
+        self.view.enableLabelMode(self)
 
     def processEvents(self):
         clearClicks = self.ctrls['clearClicks'].isChecked()
@@ -196,7 +276,7 @@ class ImageViewNode(CtrlNode):
                         else:
                             assert False
 
-        return {'view': self.view}
+        return {'view': self.view,'labelImage':self.view.imageItem.labelImage}
 
 
 ## register the class so it will appear in the menu of node types.
