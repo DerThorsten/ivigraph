@@ -124,16 +124,19 @@ class ClickImageView(pg.ImageView):
 
         self.comboBoxImageType = QtGui.QComboBox()
         self.comboBoxImageType.addItems(['Rgb','Lab','1Chn'])
+        self.channelSliderChannelDesc=QtGui.QLabel("Channel:")
         self.sliderChannels = QtGui.QSlider(QtCore.Qt.Horizontal, self)
         self.sliderChannels.setGeometry(10, 10, 200, 30)
         self.sliderChannels.setMinimum(0)
         self.sliderChannels.setMaximum(self.currentNumberOfChannels())
         self.sliderChannels.setTickInterval(1)
         self.sliderChannels.setSingleStep(1)
-
+        self.labelCurrentChannel=QtGui.QLabel(str(self.sliderChannels.sliderPosition()))
 
         self.imgCtrBox.addWidget(self.comboBoxImageType)
+        self.imgCtrBox.addWidget(self.channelSliderChannelDesc)
         self.imgCtrBox.addWidget(self.sliderChannels)
+        self.imgCtrBox.addWidget(self.labelCurrentChannel)
 
         # label box 
         # Options for label Mode :
@@ -144,6 +147,7 @@ class ClickImageView(pg.ImageView):
         self.checkboxLabelMode  = QtGui.QCheckBox('LabelMode',self)
 
         self.sliderLabels = QtGui.QSlider(QtCore.Qt.Horizontal, self)
+        self.labelSliderChannelDesc=QtGui.QLabel("Label:")
         self.sliderLabels.setGeometry(10, 10, 200, 30)
         self.sliderLabels.setMinimum(0)
         self.sliderLabels.setMaximum(self.maximumNumberOfLabels()-1)
@@ -152,6 +156,8 @@ class ClickImageView(pg.ImageView):
         self.sliderLabels.setValue(1)
         self.labelCurrentLabel=QtGui.QLabel(str(self.sliderLabels.sliderPosition()))
 
+
+        self.brushSizeSliderChannelDesc=QtGui.QLabel("Brush Size:")
         self.sliderBrushSize = QtGui.QSlider(QtCore.Qt.Horizontal, self)
         self.sliderBrushSize.setGeometry(10, 10, 200, 30)
         self.sliderBrushSize.setMinimum(1)
@@ -165,8 +171,11 @@ class ClickImageView(pg.ImageView):
         self.buttonClearLabels  = QtGui.QPushButton('del', self)
 
         self.labelBox.addWidget(self.checkboxLabelMode)
+        
+        self.labelBox.addWidget(self.labelSliderChannelDesc)
         self.labelBox.addWidget(self.sliderLabels)
         self.labelBox.addWidget(self.labelCurrentLabel)
+        self.labelBox.addWidget(self.brushSizeSliderChannelDesc)
         self.labelBox.addWidget(self.sliderBrushSize)
         self.labelBox.addWidget(self.labelBrushSize)
         self.labelBox.addWidget(self.buttonUpdateLabels)
@@ -176,6 +185,26 @@ class ClickImageView(pg.ImageView):
         # connections:
         #
         ####################
+
+        # - image type changed
+        def comboBoxImageTypeChanged(index):
+            currentText = self.comboBoxImageType.currentText()
+            if currentText in ('Rgb','Lab'):
+                self.channelSliderChannelDesc.setEnabled(False)
+                self.labelCurrentChannel.setEnabled(False)
+                self.sliderLabels.setEnabled(False)
+            elif currentText == '1Chn':
+                self.channelSliderChannelDesc.setEnabled(True)
+                self.labelCurrentChannel.setEnabled(True)
+                self.sliderLabels.setEnabled(True)
+        comboBoxImageTypeChanged(0)
+        self.comboBoxImageType.currentIndexChanged.connect(comboBoxImageTypeChanged)   
+
+        # - channel changed
+        def sliderChannelValueChanged(value):
+            self.labelCurrentChannel.setText(str(value))
+        self.sliderChannels.valueChanged.connect(sliderChannelValueChanged) 
+
 
         # - label changed
         def sliderLabelsValueChanged(value):
@@ -192,12 +221,14 @@ class ClickImageView(pg.ImageView):
 
         # - toggle label button
         def checkboxLabelModeValueChanged(labelMode):
+            self.labelSliderChannelDesc.setEnabled(labelMode)
             self.sliderLabels.setEnabled(labelMode)
             self.labelCurrentLabel.setEnabled(labelMode)
             self.sliderBrushSize.setEnabled(labelMode)
             self.labelBrushSize.setEnabled(labelMode)
             self.buttonUpdateLabels.setEnabled(labelMode)
             self.buttonClearLabels.setEnabled(labelMode)
+            self.brushSizeSliderChannelDesc.setEnabled(labelMode)
             self.labelMode = bool(labelMode)
 
 
@@ -244,10 +275,10 @@ class ClickImageView(pg.ImageView):
 
     def toBuffer(self,image):
         if self.bufferImage is None :
-            print "first copy"
+            #print "first copy"
             self.bufferImage=image.copy()
         elif image.ndim == self.bufferImage.ndim and tuple(image.shape) == tuple(self.bufferImage.shape):
-            print "no alloc  copy"
+            #print "no alloc  copy"
             self.bufferImage[:]=image[:]
         else:
             print "not matching => alloc  copy"
@@ -393,9 +424,6 @@ class ImageViewNode(CtrlNode):
     uiTemplate=[
         ('imageType', 'combo', {'values': imageTypes, 'index': 0}),
         ('channel','intSpin', {'value': 0, 'min': 0, 'max': 1e9 }),
-        ('alpha','spin', {'value': 0,'step':0.25,'range': [0.0, 1.0] }),
-        ('normalizeBlendChannel', 'check', {'value': True,'isChecked':True}),
-        ('clearClicks', 'check', {'value': True,'isChecked':True})
         #('brushSize','intSpin', {'value': 5, 'min': 1, 'max': 99 })
     ]
     def __init__(self, name):
@@ -414,14 +442,6 @@ class ImageViewNode(CtrlNode):
         self.view = view
         self.view.enableLabelMode(self)
 
-    def processEvents(self):
-        clearClicks = self.ctrls['clearClicks'].isChecked()
-
-        if(clearClicks):
-            self.view.clicks = []
-        else:
-            print "num clicks",len(self.view.clicks)
-
 
     def process(self, data,data2=None, display=True):
 
@@ -433,15 +453,9 @@ class ImageViewNode(CtrlNode):
                 data[:,:,c]*=255.0
 
         self.view.toBuffer(data)
-
-        self.processEvents()
-        alpha = self.ctrls['alpha'].value()
         displayType = ImageViewNode.imageTypes[self.ctrls['imageType'].currentIndex()]
 
         
-
-
-
 
         ## if process is called with display=False, then the flowchart is being operated
         ## in batch processing mode, so we should skip displaying to improve performance.
@@ -490,12 +504,6 @@ class ImageViewNode(CtrlNode):
         if self.view.imageItem.labelImage is not None:
             self.view.imageItem.redrawLabels()
 
-        #self.autoRange()
-        #self.autoLevels()
-
-        print " \nreturn in process \n"
-        if self.view.imageItem.labelImage is not None:
-            print self.view.imageItem.labelImage.shape
         return {'view': self.view,'labelImage':self.view.imageItem.labelImage}
 
 

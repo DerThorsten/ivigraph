@@ -6,12 +6,13 @@ ivigraph and interactive version of vigranumpy with a labView-ish gui for image 
 Version
 =============
 
-- 0.033 - alpha 	( extended imageview functions)
-- 0.032 - alpha 	( labeling is allmost finished for rgb color images)
-- 0.031 - alpha 	( fixed bug :(brush size is now changeable))
-- 0.030 - alpha 	( proof of concept for labeling is done)
-- 0.020 - alpha 	( code works on differnt machines)
-- 0.010 - alpha  	( initial version)
+- 0.0.3.4 - alpha  (improved viewer gui)
+- 0.0.3.3 - alpha  (extended imageview functions)
+- 0.0.3.2 - alpha  (labeling is allmost finished for rgb color images)
+- 0.0.3.1 - alpha  (fixed bug :(brush size is now changeable))
+- 0.0.3.0 - alpha  (proof of concept for labeling is done)
+- 0.0.2.0 - alpha  (code works on differnt machines)
+- 0.0.1.0 - alpha  (initial version)
 
 
 Quickstart:
@@ -22,17 +23,6 @@ Cick on Flowchart-Button in the GUI and edit the graph
 - right click to add new operators 
 - del to remove connections ( unknown bug, this might lead to a floating point error for huge graphs)
 - connect operator to one of the four image viewers
-
-
-Draw Labels :
-============
-- this is only supported for rgb images so far (do not try to paint und gray images)
-- click on 1-9 within the viewer you want to paint on
-- draw labels
-- press 'u' to notify all childrens node's that there are new labels
-- change the brush size in the viewer options. But so far this number should be odd.
-So far all brushes are squared.
-
 
 
 Dependencies:
