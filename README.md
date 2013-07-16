@@ -41,5 +41,5 @@ Version
 
 Authors
 =============
-- Thorsten Beier
-- Philipp Hanslovsky
+- (1) Thorsten Beier
+- (2) Philipp Hanslovsky
