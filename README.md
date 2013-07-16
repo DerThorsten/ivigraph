@@ -6,6 +6,7 @@ ivigraph and interactive version of vigranumpy with a labView-ish gui for image 
 Version 0.030 alpha
 =============
 
+- 0.031 - alpha 	( fixed bug :(brush size is now changeable))
 - 0.030 - alpha 	( proof of concept for labeling is done)
 - 0.020 - alpha 	( code works on differnt machines)
 - 0.010 - alpha  	( initial version)
