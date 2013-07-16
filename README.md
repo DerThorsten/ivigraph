@@ -3,7 +3,7 @@ ivigraph
 
 ivigraph and interactive version of vigranumpy with a labView-ish gui for image processing operator  flow charts
 
-Version 0.030 alpha
+Version
 =============
 
 - 0.032 - alpha 	( labeling is allmost finished for rgb color images)
