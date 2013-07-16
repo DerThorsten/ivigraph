@@ -151,7 +151,7 @@ class ClickImageView(pg.ImageView):
             self.bufferImage=image.copy()
         elif image.ndim == self.bufferImage.ndim and tuple(image.shape) == tuple(self.bufferImage.shape):
             print "no alloc  copy"
-            self.bufferImage[:,:,:]=image[:,:,:]
+            self.bufferImage[:]=image[:]
         else:
             print "not matching => alloc  copy"
             self.bufferImage=image.copy()
@@ -393,6 +393,10 @@ class ImageViewNode(CtrlNode):
 
         #self.autoRange()
         #self.autoLevels()
+
+        print " \nreturn in process \n"
+        if self.view.imageItem.labelImage is not None:
+            print self.view.imageItem.labelImage.shape
         return {'view': self.view,'labelImage':self.view.imageItem.labelImage}
 
 
