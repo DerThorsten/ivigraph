@@ -23,31 +23,28 @@ class ImageAndLabelItem(pg.ImageItem):
         self.drawMask = None
         print "non setter has been called"
 
-    def redrawLabels(self):
+    def redrawLabels(self,redrawUnlabled=False,updateImage=False):
         print "in redraw labels"
 
         oldLabel = self.currentLabel
         for l in range(1,self.numLabels):
-            print "l",l
-
-            print "self.labelImage",self.labelImage.shape
-            print "self.imag",self.image.shape
-            print "0"
             whereL = numpy.where(self.labelImage==l)
             nl =len(whereL[0])
-            print "nl",nl
             if nl>0:
-                print "1"
                 self.clickImageView.setCurrentLabel(l)
-                print "2"
                 self.image[whereL[0],whereL[1],:]=self.clickImageView.labelColors[l]
-                print "3"
         self.clickImageView.setCurrentLabel(oldLabel)
+
+        if redrawUnlabled == True :
+            whereL = numpy.where(self.labelImage==0)
+            nl =len(whereL[0])
+            if nl>0:
+                self.image[whereL[0],whereL[1],:]=self.clickImageView.bufferImage[whereL[0],whereL[1],:]
+        if updateImage:
+            self.updateImage()
     def drawAt(self, pos, ev=None):
         if self.clickImageView.labelMode:
-            print " drawing label",self.currentLabel
             if self.labelImage is None:
-                print "set up label image"
                 self.labelImage = numpy.zeros( [ self.image.shape[0],self.image.shape[1]])
 
 
@@ -157,7 +154,7 @@ class ClickImageView(pg.ImageView):
         self.labelCurrentLabel=QtGui.QLabel(str(self.sliderLabels.sliderPosition()))
 
 
-        self.brushSizeSliderChannelDesc=QtGui.QLabel("Brush Size:")
+        self.brushSizeSliderChannelDesc=QtGui.QLabel("BrushSize:")
         self.sliderBrushSize = QtGui.QSlider(QtCore.Qt.Horizontal, self)
         self.sliderBrushSize.setGeometry(10, 10, 200, 30)
         self.sliderBrushSize.setMinimum(1)
@@ -167,8 +164,8 @@ class ClickImageView(pg.ImageView):
         self.sliderBrushSize.setValue(3)
         self.labelBrushSize=QtGui.QLabel(str(self.sliderBrushSize.sliderPosition()))
  
-        self.buttonUpdateLabels = QtGui.QPushButton('update', self)
-        self.buttonClearLabels  = QtGui.QPushButton('del', self)
+        self.buttonUpdateLabels = QtGui.QPushButton('Propergate', self)
+        self.buttonClearLabels  = QtGui.QPushButton('ClearLabels', self)
 
         self.labelBox.addWidget(self.checkboxLabelMode)
         
@@ -219,7 +216,7 @@ class ClickImageView(pg.ImageView):
             self.imageItem.brushSize=brushSize
         self.sliderBrushSize.valueChanged.connect(sliderBrushSizeValueChanged) 
 
-        # - toggle label button
+        # - toggle label mode button
         def checkboxLabelModeValueChanged(labelMode):
             self.labelSliderChannelDesc.setEnabled(labelMode)
             self.sliderLabels.setEnabled(labelMode)
@@ -230,6 +227,20 @@ class ClickImageView(pg.ImageView):
             self.buttonClearLabels.setEnabled(labelMode)
             self.brushSizeSliderChannelDesc.setEnabled(labelMode)
             self.labelMode = bool(labelMode)
+
+        def buttonUpdateReleased():
+            print "update button"
+            for d in self._viewNode.dependentNodes():
+               d.update()
+        self.buttonUpdateLabels.released.connect(buttonUpdateReleased)
+
+        def buttonClearLabelsReleased():
+            print "clear button"
+            if self.imageItem.labelImage is not None:
+                self.imageItem.labelImage[:]=0
+            self.imageItem.redrawLabels(redrawUnlabled=True,updateImage=True)
+        self.buttonClearLabels.released.connect(buttonClearLabelsReleased)
+
 
 
         checkboxLabelModeValueChanged(False)
@@ -285,20 +296,6 @@ class ClickImageView(pg.ImageView):
             self.bufferImage=image.copy()
 
 
-    def keyReleaseEvent(self, ev):
-        if ev.key() in [QtCore.Qt.Key_Space, QtCore.Qt.Key_Home, QtCore.Qt.Key_End]:
-            ev.accept()
-        elif ev.key() in self.noRepeatKeys:
-            ev.accept()
-            if ev.isAutoRepeat():
-                return
-            try:
-                del self.keysPressed[ev.key()]
-            except:
-                self.keysPressed = {}
-            self.evalKeyState()
-        else:
-            QtGui.QWidget.keyReleaseEvent(self, ev)
 
     def setCurrentLabel(self,label):
         self.currentLabel = label
@@ -311,36 +308,10 @@ class ClickImageView(pg.ImageView):
     def keyPressEvent(self, ev):
         print ev.key()
 
-
-
         if ev.key()  == QtCore.Qt.Key_U:
             print "update dependentNodes"
             for d in self._viewNode.dependentNodes():
                d.update()
-
-        if ev.key()  == QtCore.Qt.Key_0:
-            self.setCurrentLabel(0)
-        elif ev.key()  == QtCore.Qt.Key_1:
-            self.setCurrentLabel(1)
-        elif ev.key()  == QtCore.Qt.Key_2:
-            self.setCurrentLabel(2)
-        elif ev.key()  == QtCore.Qt.Key_3:
-            self.setCurrentLabel(3)
-        elif ev.key()  == QtCore.Qt.Key_4:
-            self.setCurrentLabel(4)
-        elif ev.key()  == QtCore.Qt.Key_5:
-            self.setCurrentLabel(5)
-        elif ev.key()  == QtCore.Qt.Key_6:
-            self.setCurrentLabel(6)
-        elif ev.key()  == QtCore.Qt.Key_7:
-            self.setCurrentLabel(7)
-        elif ev.key()  == QtCore.Qt.Key_8:
-            self.setCurrentLabel(8)
-        elif ev.key()  == QtCore.Qt.Key_9:
-            self.setCurrentLabel(9)
-
-
-        print "CURRENT LABEL ",self.currentLabel
 
         if ev.key() == QtCore.Qt.Key_Space:
             if self.playRate == 0:
@@ -502,7 +473,7 @@ class ImageViewNode(CtrlNode):
 
         print "redraw labels?"
         if self.view.imageItem.labelImage is not None:
-            self.view.imageItem.redrawLabels()
+            self.view.imageItem.redrawLabels(updateImage=False)
 
         return {'view': self.view,'labelImage':self.view.imageItem.labelImage}
 

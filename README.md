@@ -29,6 +29,7 @@ Known Bugs:
 Version
 =============
 
+- 0.0.3.5 - alpha  (improved and fixed clear labels)
 - 0.0.3.4 - alpha  (improved viewer gui)
 - 0.0.3.3 - alpha  (extended imageview functions)
 - 0.0.3.2 - alpha  (labeling is allmost finished for rgb color images)
