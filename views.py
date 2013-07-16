@@ -86,7 +86,10 @@ class ImageAndLabelItem(pg.ImageItem):
             elif self.drawMode == 'add':
                 self.image[ts] += src
             elif self.drawMode == 'label':
-                self.image[ts] = self.currentLabelColor
+                if self.currentLabel!=0: 
+                    self.image[ts] = self.currentLabelColor
+                else:
+                    self.image[ts] = self.clickImageView.bufferImage[ts]
             else:
                 raise Exception("Unknown draw mode '%s'" % self.drawMode)
             self.updateImage()
