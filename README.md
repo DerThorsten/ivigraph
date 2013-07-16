@@ -22,6 +22,16 @@ Cick on Flowchart-Button in the GUI and edit the graph
 - del to remove connections ( unknown bug, this might lead to a floating point error for huge graphs)
 - connect operator to one of the four image viewers
 
+
+Draw Labels :
+============
+- this is only supported for rgb images so far (do not try to paint und gray images)
+- click on 1-9 within the viewer you want to paint on
+- draw labels
+- press 'u' to notify all childrens node's that there are new labels
+
+
+
 Dependencies:
 =============
 - vigranumpy   http://hci.iwr.uni-heidelberg.de/vigra/  (Python and Boost Python Wrapped C++ Code)
