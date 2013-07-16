@@ -6,6 +6,7 @@ ivigraph and interactive version of vigranumpy with a labView-ish gui for image 
 Version
 =============
 
+- 0.033 - alpha 	( extended imageview functions)
 - 0.032 - alpha 	( labeling is allmost finished for rgb color images)
 - 0.031 - alpha 	( fixed bug :(brush size is now changeable))
 - 0.030 - alpha 	( proof of concept for labeling is done)

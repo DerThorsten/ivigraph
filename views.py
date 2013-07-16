@@ -20,6 +20,7 @@ class ImageAndLabelItem(pg.ImageItem):
         self.clicks=[]
 
         self.labelImage = None 
+        self.drawMask = None
         print "non setter has been called"
 
     def redrawLabels(self):
@@ -43,62 +44,49 @@ class ImageAndLabelItem(pg.ImageItem):
                 print "3"
         self.clickImageView.setCurrentLabel(oldLabel)
     def drawAt(self, pos, ev=None):
-        print " drawing label",self.currentLabel
-        if self.labelImage is None:
-            print "set up label image"
-            self.labelImage = numpy.zeros( [ self.image.shape[0],self.image.shape[1]])
+        if self.clickImageView.labelMode:
+            print " drawing label",self.currentLabel
+            if self.labelImage is None:
+                print "set up label image"
+                self.labelImage = numpy.zeros( [ self.image.shape[0],self.image.shape[1]])
 
 
-        pos = [int(pos.x()), int(pos.y())]
-        dk = self.drawKernel
-        kc = self.drawKernelCenter
-        sx = [0,dk.shape[0]]
-        sy = [0,dk.shape[1]]
-        tx = [pos[0] - kc[0], pos[0] - kc[0]+ dk.shape[0]]
-        ty = [pos[1] - kc[1], pos[1] - kc[1]+ dk.shape[1]]
-        
-        for i in [0,1]:
-            dx1 = -min(0, tx[i])
-            dx2 = min(0, self.image.shape[0]-tx[i])
-            tx[i] += dx1+dx2
-            sx[i] += dx1+dx2
+            pos = [int(pos.x()), int(pos.y())]
+            dk = self.drawKernel
+            kc = self.drawKernelCenter
+            sx = [0,dk.shape[0]]
+            sy = [0,dk.shape[1]]
+            tx = [pos[0] - kc[0], pos[0] - kc[0]+ dk.shape[0]]
+            ty = [pos[1] - kc[1], pos[1] - kc[1]+ dk.shape[1]]
+            
+            for i in [0,1]:
+                dx1 = -min(0, tx[i])
+                dx2 = min(0, self.image.shape[0]-tx[i])
+                tx[i] += dx1+dx2
+                sx[i] += dx1+dx2
 
-            dy1 = -min(0, ty[i])
-            dy2 = min(0, self.image.shape[1]-ty[i])
-            ty[i] += dy1+dy2
-            sy[i] += dy1+dy2
+                dy1 = -min(0, ty[i])
+                dy2 = min(0, self.image.shape[1]-ty[i])
+                ty[i] += dy1+dy2
+                sy[i] += dy1+dy2
 
-        ts = (slice(tx[0],tx[1]), slice(ty[0],ty[1]))
-        ss = (slice(sx[0],sx[1]), slice(sy[0],sy[1]))
-        mask = self.drawMask
-        src = dk
-        
-        if isinstance(self.drawMode, collections.Callable):
-            self.drawMode(dk, self.image, mask, ss, ts, ev)
-        else:
-            src = src[ss]
-            self.labelImage[ts]=self.currentLabel
-            if self.drawMode == 'set':
-                if mask is not None:
-                    mask = mask[ss]
-                    self.image[ts] = self.image[ts] * (1-mask) + src * mask
-                else:
-                    self.image[ts] = src
-            elif self.drawMode == 'add':
-                self.image[ts] += src
-            elif self.drawMode == 'label':
+            ts = (slice(tx[0],tx[1]), slice(ty[0],ty[1]))
+            ss = (slice(sx[0],sx[1]), slice(sy[0],sy[1]))
+            mask = self.drawMask
+            src = dk
+            
+            if isinstance(self.drawMode, collections.Callable):
+                self.drawMode(dk, self.image, mask, ss, ts, ev)
+            else:
+                src = src[ss]
+                self.labelImage[ts]=self.currentLabel
                 if self.currentLabel!=0: 
                     self.image[ts] = self.currentLabelColor
                 else:
                     self.image[ts] = self.clickImageView.bufferImage[ts]
-            else:
-                raise Exception("Unknown draw mode '%s'" % self.drawMode)
-            self.updateImage()
-
-        #self._viewNode.update()
-
-        #for d in self._viewNode.dependentNodes():
-        #   d.update()
+                self.updateImage()
+        else : 
+            pass
 
 
     def setDrawKernel(self, kernel=None, mask=None, center=(0,0), mode='set'):
@@ -111,9 +99,117 @@ class ImageAndLabelItem(pg.ImageItem):
 
 
 
+
 class ClickImageView(pg.ImageView):
+
+    def currentNumberOfChannels(self):
+        return 3
+    def maximumNumberOfLabels(self):
+        return 10
+
+    def setupMyUi(self):    
+
+        # belowImgBox is main layout unter the image
+        self.belowImgBox = QtGui.QVBoxLayout()
+        #self.belowImgBox.addStretch(1)
+        self.layout().addLayout(self.belowImgBox,1,0)
+
+
+        # image type and channel
+        # controll of channelsS
+        self.imgCtrBox = QtGui.QHBoxLayout()
+        #self.imgCtrBox.addStretch(1)
+        self.belowImgBox.addLayout(self.imgCtrBox)
+        #self.belowImgBox.addStretch(1)    
+
+        self.comboBoxImageType = QtGui.QComboBox()
+        self.comboBoxImageType.addItems(['Rgb','Lab','1Chn'])
+        self.sliderChannels = QtGui.QSlider(QtCore.Qt.Horizontal, self)
+        self.sliderChannels.setGeometry(10, 10, 200, 30)
+        self.sliderChannels.setMinimum(0)
+        self.sliderChannels.setMaximum(self.currentNumberOfChannels())
+        self.sliderChannels.setTickInterval(1)
+        self.sliderChannels.setSingleStep(1)
+
+
+        self.imgCtrBox.addWidget(self.comboBoxImageType)
+        self.imgCtrBox.addWidget(self.sliderChannels)
+
+        # label box 
+        # Options for label Mode :
+        self.labelBox = QtGui.QHBoxLayout()
+        #self.belowImgBox.addStretch(1)
+        self.belowImgBox.addLayout(self.labelBox)
+
+        self.checkboxLabelMode  = QtGui.QCheckBox('LabelMode',self)
+
+        self.sliderLabels = QtGui.QSlider(QtCore.Qt.Horizontal, self)
+        self.sliderLabels.setGeometry(10, 10, 200, 30)
+        self.sliderLabels.setMinimum(0)
+        self.sliderLabels.setMaximum(self.maximumNumberOfLabels()-1)
+        self.sliderLabels.setTickInterval(1)
+        self.sliderLabels.setSingleStep(1)
+        self.sliderLabels.setValue(1)
+        self.labelCurrentLabel=QtGui.QLabel(str(self.sliderLabels.sliderPosition()))
+
+        self.sliderBrushSize = QtGui.QSlider(QtCore.Qt.Horizontal, self)
+        self.sliderBrushSize.setGeometry(10, 10, 200, 30)
+        self.sliderBrushSize.setMinimum(1)
+        self.sliderBrushSize.setMaximum(55)
+        self.sliderBrushSize.setTickInterval(1)
+        self.sliderBrushSize.setSingleStep(1)
+        self.sliderBrushSize.setValue(3)
+        self.labelBrushSize=QtGui.QLabel(str(self.sliderBrushSize.sliderPosition()))
+ 
+        self.buttonUpdateLabels = QtGui.QPushButton('update', self)
+        self.buttonClearLabels  = QtGui.QPushButton('del', self)
+
+        self.labelBox.addWidget(self.checkboxLabelMode)
+        self.labelBox.addWidget(self.sliderLabels)
+        self.labelBox.addWidget(self.labelCurrentLabel)
+        self.labelBox.addWidget(self.sliderBrushSize)
+        self.labelBox.addWidget(self.labelBrushSize)
+        self.labelBox.addWidget(self.buttonUpdateLabels)
+        self.labelBox.addWidget(self.buttonClearLabels)
+        
+
+        # connections:
+        #
+        ####################
+
+        # - label changed
+        def sliderLabelsValueChanged(value):
+            self.labelCurrentLabel.setText(str(value))
+            self.setCurrentLabel(value)
+        self.sliderLabels.valueChanged.connect(sliderLabelsValueChanged) 
+
+        # - brush size chaned
+        def sliderBrushSizeValueChanged(value):
+            self.labelBrushSize.setText(str(value))
+            self.enableLabelMode(size=value,setLevels=False)
+            self.imageItem.brushSize=brushSize
+        self.sliderBrushSize.valueChanged.connect(sliderBrushSizeValueChanged) 
+
+        # - toggle label button
+        def checkboxLabelModeValueChanged(labelMode):
+            self.sliderLabels.setEnabled(labelMode)
+            self.labelCurrentLabel.setEnabled(labelMode)
+            self.sliderBrushSize.setEnabled(labelMode)
+            self.labelBrushSize.setEnabled(labelMode)
+            self.buttonUpdateLabels.setEnabled(labelMode)
+            self.buttonClearLabels.setEnabled(labelMode)
+            self.labelMode = bool(labelMode)
+
+
+        checkboxLabelModeValueChanged(False)
+        self.checkboxLabelMode.stateChanged.connect(checkboxLabelModeValueChanged) 
+
+
     def __init__(self,*args,**kwargs):
         super(ClickImageView, self).__init__(imageItem=ImageAndLabelItem())
+
+        self.setupMyUi()
+
 
         self.clicks=[]
         self.currentLabel=1
@@ -262,7 +358,9 @@ class ClickImageView(pg.ImageView):
             else :
                 pass
     """
-    def enableLabelMode(self,viewNode=None,size=1,setLevels=True):        
+    def enableLabelMode(self,viewNode=None,size=None,setLevels=True):    
+        if size is None :
+            size = self.sliderBrushSize.sliderPosition()    
         kern = numpy.ones([size,size,3])
         for x in xrange(kern.shape[0]):
             for y in xrange(kern.shape[1]):
@@ -270,6 +368,8 @@ class ClickImageView(pg.ImageView):
         self.imageItem.currentLabelColor = self.labelColors[self.currentLabel,:]
         self.imageItem.setDrawKernel(kern, mask=kern, center=(int(size)/2,int(size)/2), mode='label')
         
+
+
         if setLevels :
             self.imageItem.setLevels([0, 10])
         if viewNode is not None:
@@ -295,8 +395,8 @@ class ImageViewNode(CtrlNode):
         ('channel','intSpin', {'value': 0, 'min': 0, 'max': 1e9 }),
         ('alpha','spin', {'value': 0,'step':0.25,'range': [0.0, 1.0] }),
         ('normalizeBlendChannel', 'check', {'value': True,'isChecked':True}),
-        ('clearClicks', 'check', {'value': True,'isChecked':True}),
-        ('brushSize','intSpin', {'value': 5, 'min': 1, 'max': 99 })
+        ('clearClicks', 'check', {'value': True,'isChecked':True})
+        #('brushSize','intSpin', {'value': 5, 'min': 1, 'max': 99 })
     ]
     def __init__(self, name):
         self.view = None
@@ -337,11 +437,8 @@ class ImageViewNode(CtrlNode):
         self.processEvents()
         alpha = self.ctrls['alpha'].value()
         displayType = ImageViewNode.imageTypes[self.ctrls['imageType'].currentIndex()]
-        brushSize =self.ctrls['brushSize'].value()
 
-        self.view.enableLabelMode(size=brushSize,setLevels=False)
-
-        self.view.imageItem.brushSize=brushSize
+        
 
 
 
