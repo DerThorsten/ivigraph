@@ -12,9 +12,9 @@ import numpy as np
 import collections
 
 
-class MyImageItem(pg.ImageItem):
+class ImageAndLabelItem(pg.ImageItem):
     def __init__(self,*args,**kwargs):
-        super(MyImageItem, self).__init__(*args,**kwargs)
+        super(ImageAndLabelItem, self).__init__(*args,**kwargs)
         self.clicks=[]
 
         self.labelImage = None 
@@ -73,7 +73,7 @@ class MyImageItem(pg.ImageItem):
         #   d.update()
 
 
-    def setDrawKernel(self, kernel=None, mask=None, center=(0,0), mode='add'):
+    def setDrawKernel(self, kernel=None, mask=None, center=(0,0), mode='set'):
         self.drawKernel = kernel
         self.drawKernelCenter = center
         self.drawMode = mode
@@ -82,11 +82,36 @@ class MyImageItem(pg.ImageItem):
 
 class ClickImageView(pg.ImageView):
     def __init__(self,*args,**kwargs):
-        super(ClickImageView, self).__init__(imageItem=MyImageItem())
+        super(ClickImageView, self).__init__(imageItem=ImageAndLabelItem())
+
         self.clicks=[]
-        self.imageItem
         self.currentLabel=1
         self.imageItem.currentLabel=1
+        self.numLabels=10
+
+        self.brushSize = 3
+
+        self.labelColors =numpy.ones([self.numLabels,3])
+        self.labelColors[0,:]=0,0,0
+        self.labelColors[1,:]=1,0,0
+        self.labelColors[2,:]=0,1,0
+        self.labelColors[3,:]=0,0,1
+
+        self.labelColors[4,:]=0.8,0.5,0.0
+        self.labelColors[5,:]=0.5,0.8,0.0
+        self.labelColors[6,:]=0.0,0.5,0.8
+
+
+        self.labelColors[7,:]=0.8,0.4,0.2
+        self.labelColors[8,:]=0.4,0.8,0.3
+        self.labelColors[9,:]=0.2,0.4,0.8
+
+
+
+        self.labelColors*=200.0
+
+
+
     def keyReleaseEvent(self, ev):
         if ev.key() in [QtCore.Qt.Key_Space, QtCore.Qt.Key_Home, QtCore.Qt.Key_End]:
             ev.accept()
@@ -102,6 +127,14 @@ class ClickImageView(pg.ImageView):
         else:
             QtGui.QWidget.keyReleaseEvent(self, ev)
 
+    def setCurrentLabel(self,label):
+        self.currentLabel = label
+        self.imageItem.currentLabel = label 
+
+        for x in xrange(self.imageItem.drawKernel.shape[0]):
+            for y in xrange(self.imageItem.drawKernel.shape[1]):
+                self.imageItem.drawKernel[x,y,:]=self.labelColors[self.currentLabel,:]
+
     def keyPressEvent(self, ev):
         print ev.key()
 
@@ -113,35 +146,25 @@ class ClickImageView(pg.ImageView):
                d.update()
 
         if ev.key()  == QtCore.Qt.Key_0:
-            self.currentLabel = 0
-            self.imageItem.currentLabel = 0 
-        if ev.key()  == QtCore.Qt.Key_1:
-            self.currentLabel = 1
-            self.imageItem.currentLabel = 1
-        if ev.key()  == QtCore.Qt.Key_2:
-           self.currentLabel  = 2
-           self.imageItem.currentLabel = 2
-        if ev.key()  == QtCore.Qt.Key_3:
-           self.currentLabel  = 3
-           self.imageItem.currentLabel = 3
-        if ev.key()  == QtCore.Qt.Key_4:
-           self.currentLabel  = 4
-           self.imageItem.currentLabel = 4
-        if ev.key()  == QtCore.Qt.Key_5:
-           self.currentLabel  = 5
-           self.imageItem.currentLabel = 5
-        if ev.key()  == QtCore.Qt.Key_6:
-           self.currentLabel  = 6
-           self.imageItem.currentLabel = 6
-        if ev.key()  == QtCore.Qt.Key_7:
-           self.currentLabel  = 7
-           self.imageItem.currentLabel = 7
-        if ev.key()  == QtCore.Qt.Key_8:
-           self.currentLabel  = 8
-           self.imageItem.currentLabel = 8
-        if ev.key()  == QtCore.Qt.Key_9:
-           self.currentLabel  = 9
-           self.imageItem.currentLabel = 9
+            self.setCurrentLabel(0)
+        elif ev.key()  == QtCore.Qt.Key_1:
+            self.setCurrentLabel(1)
+        elif ev.key()  == QtCore.Qt.Key_2:
+            self.setCurrentLabel(2)
+        elif ev.key()  == QtCore.Qt.Key_3:
+            self.setCurrentLabel(3)
+        elif ev.key()  == QtCore.Qt.Key_4:
+            self.setCurrentLabel(4)
+        elif ev.key()  == QtCore.Qt.Key_5:
+            self.setCurrentLabel(5)
+        elif ev.key()  == QtCore.Qt.Key_6:
+            self.setCurrentLabel(6)
+        elif ev.key()  == QtCore.Qt.Key_7:
+            self.setCurrentLabel(7)
+        elif ev.key()  == QtCore.Qt.Key_8:
+            self.setCurrentLabel(8)
+        elif ev.key()  == QtCore.Qt.Key_9:
+            self.setCurrentLabel(9)
 
 
         print "CURRENT LABEL ",self.currentLabel
@@ -171,6 +194,7 @@ class ClickImageView(pg.ImageView):
         else:
             QtGui.QWidget.keyPressEvent(self, ev)
 
+
     """
     def mousePressEvent(self, event):
         if self.image is None:
@@ -192,16 +216,16 @@ class ClickImageView(pg.ImageView):
             else :
                 pass
     """
-    def enableLabelMode(self,viewNode):
-        
-        kern = numpy.array([
-            [255, 255, 255],
-            [255, 255, 255],
-            [255, 255, 255]
-        ])
-        self.imageItem.setDrawKernel(kern, mask=kern, center=(1,1), mode='add')
-        self.imageItem.setLevels([0, 10])
-        self._viewNode = viewNode
+    def enableLabelMode(self,viewNode=None,size=1,setLevels=True):        
+        kern = numpy.ones([size,size,3])
+        kern[:,:,0]=200
+        self.imageItem.setDrawKernel(kern, mask=kern, center=(int(size)/2,int(size)/2), mode='add')
+        self.setCurrentLabel(1)
+        if setLevels :
+            self.imageItem.setLevels([0, 10])
+        if viewNode is not None:
+            self._viewNode = viewNode
+
 
 
 
@@ -221,7 +245,8 @@ class ImageViewNode(CtrlNode):
         ('channel','intSpin', {'value': 0, 'min': 0, 'max': 1e9 }),
         ('alpha','spin', {'value': 0,'step':0.25,'range': [0.0, 1.0] }),
         ('normalizeBlendChannel', 'check', {'value': True,'isChecked':True}),
-        ('clearClicks', 'check', {'value': True,'isChecked':True})
+        ('clearClicks', 'check', {'value': True,'isChecked':True}),
+        ('brushSize','intSpin', {'value': 5, 'min': 1, 'max': 99 })
     ]
     def __init__(self, name):
         self.view = None
@@ -253,79 +278,59 @@ class ImageViewNode(CtrlNode):
 
         alpha = self.ctrls['alpha'].value()
         displayType = ImageViewNode.imageTypes[self.ctrls['imageType'].currentIndex()]
+        brushSize =self.ctrls['brushSize'].value()
 
-        if (data2 is not None) and alpha > 0.0:
-            data2=numpy.squeeze(data2)
-            d2=data2.copy()
-            normBlend = self.ctrls['normalizeBlendChannel'].isChecked()
-            print "normbBlend",normBlend
-            if (normBlend):
-                d2-=d2.min()
-                d2/=d2.max()
-                d2*=255.0
+        self.view.enableLabelMode(size=brushSize,setLevels=False)
 
-            dim1=data.ndim
-            dim2=d2.ndim
-
-            if dim1==3 and dim2==3 :
-                print "do colorblending"
-                dataBlended = (1.0-alpha)*data + alpha*(d2)
-                
-            if dim1==3 and dim2==2:
-                print "do color gray bleding"
-                dataBlended =data.copy()
-                for c in range(3):
-                    dataBlended[:,:,c] = (1.0-alpha)*data[:,:,c] + alpha*d2
-
-            if dim1==2 and dim2==3:
-                assert False
-
-            self.view.setImage(dataBlended)
-        else:        
+        self.view.imageItem.brushSize=brushSize
 
 
-            ## if process is called with display=False, then the flowchart is being operated
-            ## in batch processing mode, so we should skip displaying to improve performance.
-            if display and self.view is not None:
 
-                ## the 'data' argument is the value given to the 'data' terminal
-                if data is None:
-                    self.view.setImage(np.zeros((1,1))) # give a blank array to clear the view
-                else:
-                    #m get constrolls
-                    channel     = self.ctrls['channel'].value()
-                    displayType = ImageViewNode.imageTypes[self.ctrls['imageType'].currentIndex()]
 
-                    # dimensions
-                    ndim =data.ndim 
-                    if(ndim==2 or (ndim==3 and data.shape[2]==1) ):
-                        print "display grayscaled"
-                        self.view.setImage(data)
-                    elif(ndim==3):
-                        print "display some multichannel"
-                        # number of channels
-                        nC = data.shape[2]
-                        if displayType=='RgbType':
-                            print "display RGB"
-                            # check channels
-                            if nC !=3 : 
-                                raise RuntimeError("wrong number of channels for rgb image")
-                            self.view.setImage(data)
-                        elif displayType=='LabType':
-                            print "display LAB"
-                            # check channels
-                            if nC !=3 : 
-                                raise RuntimeError("wrong number of channels for lab image")
-                            self.view.setImage(vigra.colors.transform_Lab2RGB(data))
-                        elif displayType=='MultiChannel':
-                            print "display MultiChannel"
-                            # check SELECTED channels
-                            if channel >= nC :
-                                raise RuntimeError("channel index is out of bounds")
-                            self.view.setImage(data[:,:,channel])
-                        else:
-                            assert False
+        ## if process is called with display=False, then the flowchart is being operated
+        ## in batch processing mode, so we should skip displaying to improve performance.
+        if display and self.view is not None:
 
+            ## the 'data' argument is the value given to the 'data' terminal
+            if data is None:
+                self.view.setImage(np.zeros((1,1))) # give a blank array to clear the view
+            else:
+                #m get constrolls
+                channel     = self.ctrls['channel'].value()
+                displayType = ImageViewNode.imageTypes[self.ctrls['imageType'].currentIndex()]
+
+                # dimensions
+                ndim =data.ndim 
+                if(ndim==2 or (ndim==3 and data.shape[2]==1) ):
+                    print "display grayscaled"
+                    self.view.setImage(data.copy())
+                elif(ndim==3):
+                    print "display some multichannel"
+                    # number of channels
+                    nC = data.shape[2]
+                    if displayType=='RgbType':
+                        print "display RGB"
+                        # check channels
+                        if nC !=3 : 
+                            raise RuntimeError("wrong number of channels for rgb image")
+                        self.view.setImage(data.copy())
+                    elif displayType=='LabType':
+                        print "display LAB"
+                        # check channels
+                        if nC !=3 : 
+                            raise RuntimeError("wrong number of channels for lab image")
+                        self.view.setImage(vigra.colors.transform_Lab2RGB(data))
+                    elif displayType=='MultiChannel':
+                        print "display MultiChannel"
+                        # check SELECTED channels
+                        if channel >= nC :
+                            raise RuntimeError("channel index is out of bounds")
+                        self.view.setImage(data[:,:,channel].copy())
+                    else:
+                        assert False
+
+        self.autoRange()
+        self.autoLevels()
         return {'view': self.view,'labelImage':self.view.imageItem.labelImage}
 
 
