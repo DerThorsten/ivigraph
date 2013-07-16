@@ -25,6 +25,7 @@ class ImageAndLabelItem(pg.ImageItem):
     def redrawLabels(self):
         print "in redraw labels"
 
+        oldLabel = self.currentLabel
         for l in range(1,self.numLabels):
             print "l",l
 
@@ -40,7 +41,7 @@ class ImageAndLabelItem(pg.ImageItem):
                 print "2"
                 self.image[whereL[0],whereL[1],:]=self.clickImageView.labelColors[l]
                 print "3"
-
+        self.clickImageView.setCurrentLabel(oldLabel)
     def drawAt(self, pos, ev=None):
         print " drawing label",self.currentLabel
         if self.labelImage is None:
@@ -268,10 +269,11 @@ class ClickImageView(pg.ImageView):
                 kern[x,y,:]=self.labelColors[self.currentLabel,:]
         self.imageItem.currentLabelColor = self.labelColors[self.currentLabel,:]
         self.imageItem.setDrawKernel(kern, mask=kern, center=(int(size)/2,int(size)/2), mode='label')
-        self.setCurrentLabel(1)
+        
         if setLevels :
             self.imageItem.setLevels([0, 10])
         if viewNode is not None:
+            self.setCurrentLabel(1)
             self._viewNode = viewNode
 
 
