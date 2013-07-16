@@ -46,6 +46,8 @@ class ImageAndLabelItem(pg.ImageItem):
         if self.labelImage is None:
             print "set up label image"
             self.labelImage = numpy.zeros( [ self.image.shape[0],self.image.shape[1]])
+
+
         pos = [int(pos.x()), int(pos.y())]
         dk = self.drawKernel
         kc = self.drawKernelCenter
@@ -138,6 +140,18 @@ class ClickImageView(pg.ImageView):
 
         self.labelColors*=255.0
 
+        self.bufferImage = None
+
+    def toBuffer(self,image):
+        if self.bufferImage is None :
+            print "first copy"
+            self.bufferImage=image.copy()
+        elif image.ndim == self.bufferImage.ndim and tuple(image.shape) == tuple(self.bufferImage.shape):
+            print "no alloc  copy"
+            self.bufferImage[:,:,:]=image[:,:,:]
+        else:
+            print "not matching => alloc  copy"
+            self.bufferImage=image.copy()
 
 
     def keyReleaseEvent(self, ev):
@@ -313,9 +327,9 @@ class ImageViewNode(CtrlNode):
                 data[:,:,c]/=data[:,:,c].max()
                 data[:,:,c]*=255.0
 
+        self.view.toBuffer(data)
 
         self.processEvents()
-
         alpha = self.ctrls['alpha'].value()
         displayType = ImageViewNode.imageTypes[self.ctrls['imageType'].currentIndex()]
         brushSize =self.ctrls['brushSize'].value()
