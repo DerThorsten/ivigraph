@@ -471,7 +471,7 @@ class ImageViewNode(CtrlNode):
                         assert False
 
 
-        print "redraw labels?"
+        #print "redraw labels?"
         if self.view.imageItem.labelImage is not None:
             self.view.imageItem.redrawLabels(updateImage=False)
 
