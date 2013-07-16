@@ -12,6 +12,8 @@ import numpy as np
 import collections
 
 
+
+
 class ImageAndLabelItem(pg.ImageItem):
     def __init__(self,*args,**kwargs):
         super(ImageAndLabelItem, self).__init__(*args,**kwargs)
@@ -20,11 +22,30 @@ class ImageAndLabelItem(pg.ImageItem):
         self.labelImage = None 
         print "non setter has been called"
 
+    def redrawLabels(self):
+        print "in redraw labels"
+
+        for l in range(1,self.numLabels):
+            print "l",l
+
+            print "self.labelImage",self.labelImage.shape
+            print "self.imag",self.image.shape
+            print "0"
+            whereL = numpy.where(self.labelImage==l)
+            nl =len(whereL[0])
+            print "nl",nl
+            if nl>0:
+                print "1"
+                self.clickImageView.setCurrentLabel(l)
+                print "2"
+                self.image[whereL[0],whereL[1],:]=self.clickImageView.labelColors[l]
+                print "3"
+
     def drawAt(self, pos, ev=None):
         print " drawing label",self.currentLabel
         if self.labelImage is None:
             print "set up label image"
-            self.labelImage = numpy.ones( [ self.image.shape[0],self.image.shape[1]])
+            self.labelImage = numpy.zeros( [ self.image.shape[0],self.image.shape[1]])
         pos = [int(pos.x()), int(pos.y())]
         dk = self.drawKernel
         kc = self.drawKernelCenter
@@ -58,11 +79,12 @@ class ImageAndLabelItem(pg.ImageItem):
                 if mask is not None:
                     mask = mask[ss]
                     self.image[ts] = self.image[ts] * (1-mask) + src * mask
-                    self.labelImage[ts]=self.currentLabel
                 else:
                     self.image[ts] = src
             elif self.drawMode == 'add':
                 self.image[ts] += src
+            elif self.drawMode == 'label':
+                self.image[ts] = self.currentLabelColor
             else:
                 raise Exception("Unknown draw mode '%s'" % self.drawMode)
             self.updateImage()
@@ -80,6 +102,9 @@ class ImageAndLabelItem(pg.ImageItem):
         self.drawMask = mask
 
 
+
+
+
 class ClickImageView(pg.ImageView):
     def __init__(self,*args,**kwargs):
         super(ClickImageView, self).__init__(imageItem=ImageAndLabelItem())
@@ -88,6 +113,9 @@ class ClickImageView(pg.ImageView):
         self.currentLabel=1
         self.imageItem.currentLabel=1
         self.numLabels=10
+        self.imageItem.numLabels=10
+       
+        self.imageItem.clickImageView=self
 
         self.brushSize = 3
 
@@ -108,7 +136,7 @@ class ClickImageView(pg.ImageView):
 
 
 
-        self.labelColors*=200.0
+        self.labelColors*=255.0
 
 
 
@@ -130,7 +158,7 @@ class ClickImageView(pg.ImageView):
     def setCurrentLabel(self,label):
         self.currentLabel = label
         self.imageItem.currentLabel = label 
-
+        self.imageItem.currentLabelColor = self.labelColors[self.currentLabel,:]
         for x in xrange(self.imageItem.drawKernel.shape[0]):
             for y in xrange(self.imageItem.drawKernel.shape[1]):
                 self.imageItem.drawKernel[x,y,:]=self.labelColors[self.currentLabel,:]
@@ -218,8 +246,11 @@ class ClickImageView(pg.ImageView):
     """
     def enableLabelMode(self,viewNode=None,size=1,setLevels=True):        
         kern = numpy.ones([size,size,3])
-        kern[:,:,0]=200
-        self.imageItem.setDrawKernel(kern, mask=kern, center=(int(size)/2,int(size)/2), mode='add')
+        for x in xrange(kern.shape[0]):
+            for y in xrange(kern.shape[1]):
+                kern[x,y,:]=self.labelColors[self.currentLabel,:]
+        self.imageItem.currentLabelColor = self.labelColors[self.currentLabel,:]
+        self.imageItem.setDrawKernel(kern, mask=kern, center=(int(size)/2,int(size)/2), mode='label')
         self.setCurrentLabel(1)
         if setLevels :
             self.imageItem.setLevels([0, 10])
@@ -274,6 +305,15 @@ class ImageViewNode(CtrlNode):
 
 
     def process(self, data,data2=None, display=True):
+
+        if data.ndim==3 and data.shape[2]==3:
+
+            for c in range(3):
+                data[:,:,c]-=data[:,:,c].min()
+                data[:,:,c]/=data[:,:,c].max()
+                data[:,:,c]*=255.0
+
+
         self.processEvents()
 
         alpha = self.ctrls['alpha'].value()
@@ -329,8 +369,13 @@ class ImageViewNode(CtrlNode):
                     else:
                         assert False
 
-        self.autoRange()
-        self.autoLevels()
+
+        print "redraw labels?"
+        if self.view.imageItem.labelImage is not None:
+            self.view.imageItem.redrawLabels()
+
+        #self.autoRange()
+        #self.autoLevels()
         return {'view': self.view,'labelImage':self.view.imageItem.labelImage}
 
 
