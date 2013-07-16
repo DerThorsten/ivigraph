@@ -29,6 +29,8 @@ Draw Labels :
 - click on 1-9 within the viewer you want to paint on
 - draw labels
 - press 'u' to notify all childrens node's that there are new labels
+- change the brush size in the viewer options. But so far this number should be odd.
+So far all brushes are squared.
 
 
 
