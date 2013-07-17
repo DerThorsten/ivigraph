@@ -1339,6 +1339,45 @@ fclib.registerNodeType(RandomForest, [('Image-MachineLearning',)])
 
 
 
+###################################################
+#
+#   Learn Random Forest
+#
+###################################################
+
+class LearnRandomForest(CtrlNode):
+    """ train a random forest classifier """
+    nodeName = "LearnRandomForst"
+
+    uiTemplate=[
+        ('number of trees', 'intSpin', {'value': 100, 'min': 0, 'max': 1e9 })
+    ]
+
+    def __init__(self, name):
+        terminals = {
+            'FeatureMatrix': dict(io='in'),
+            'LabelVector': dict(io='in'),
+            'RandomForest': dict(io='out'),
+            'OOB-Error': dict(io='out')
+        }
+        CtrlNode.__init__(self, name, terminals=terminals)
+    def process(self, FeatureMatrix, LabelVector, display=True):
+        if FeatureMatrix is None or LabelVector is None:
+            return
+        if FeatureMatrix.shape[0] != LabelVector.shape[0]:
+            raise Exception("number of labels does not agree with feature matrix")
+        if FeatureMatrix.dtype is not np.float32:
+            FeatureMatrix = FeatureMatrix.astype(np.float32)
+        if LabelVector.dtype is not np.uint32:
+            LabelVector = LabelVector.astype(np.uint32)
+        rf = vigra.learning.RandomForest(treeCount=self.ctrls['number of trees'].value())
+        oob = rf.learnRF(FeatureMatrix, LabelVector)
+        return {'RandomForest': rf, 'OOB-Error': oob}
+
+fclib.registerNodeType(LearnRandomForest, [('Image-MachineLearning',)])
+
+
+
 
 
 
