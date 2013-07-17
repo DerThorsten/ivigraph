@@ -4,7 +4,7 @@ from pyqtgraph.flowchart.library.common import CtrlNode
 from pyqtgraph.flowchart import Node
 from pyqtgraph.Qt import QtGui, QtCore
 import pyqtgraph as pg
-import numpy
+import numpy as np
 import scipy.ndimage
 import vigra
 import math
@@ -19,7 +19,7 @@ def convertNh(nh):
     return neighborhood
 
 
-def vigraNode(nodeName,uiTemplate,f,dtypeIn=numpy.float32,dtypeOut=numpy.float32,doChannelWise=False):
+def vigraNode(nodeName,uiTemplate,f,dtypeIn=np.float32,dtypeOut=np.float32,doChannelWise=False):
     name = nodeName
     uiT  = uiTemplate
     kwargs = {}
@@ -61,8 +61,8 @@ def vigraNode(nodeName,uiTemplate,f,dtypeIn=numpy.float32,dtypeOut=numpy.float32
 
 
             #sigma = self.ctrls['sigma'].value()
-            dataInVigra = numpy.require(dataIn,dtype=dtypeIn)
-            dataInVigra = numpy.squeeze(dataInVigra)
+            dataInVigra = np.require(dataIn,dtype=dtypeIn)
+            dataInVigra = np.squeeze(dataInVigra)
             
 
             if doChannelWise == False or dataInVigra.ndim==2 or dataInVigra.shape[2]==1:
@@ -71,12 +71,12 @@ def vigraNode(nodeName,uiTemplate,f,dtypeIn=numpy.float32,dtypeOut=numpy.float32
             else:
 
                 numChannels = dataInVigra.shape[2]
-                vigraResult  = numpy.ones( dataInVigra.shape,dtype=dtypeIn)
+                vigraResult  = np.ones( dataInVigra.shape,dtype=dtypeIn)
                 for c in range(numChannels):
                     print "channel wise input :",dataInVigra[:,:,c].shape,dataInVigra[:,:,c].dtype
                     vigraResult[:,:,c]=f(dataInVigra[:,:,c],**kwargs)
-            vigraResult = numpy.squeeze(vigraResult)
-            vigraResult = numpy.require(vigraResult,dtype=dtypeOut)
+            vigraResult = np.squeeze(vigraResult)
+            vigraResult = np.require(vigraResult,dtype=dtypeOut)
 
 
             return {'dataOut': vigraResult}
@@ -326,7 +326,7 @@ def _tensorEigenvalues(tensor,sortEigenValues,eigenvalue=0):
 
     ew = vigra.filters.tensorEigenvalues(tensor)
     if  sortEigenValues :
-        ew = numpy.sort(ew,axis=2)
+        ew = np.sort(ew,axis=2)
     if eigenvalue<=1:
         return ew[:,:,eigenvalue]
     else :
@@ -389,7 +389,7 @@ class StructureTensorTrace(CtrlNode):
         tensorValues = vigra.filters.structureTensor(image=Image,
                                                      innerScale = self.ctrls['innerscale'].value(),
                                                      outerScale = self.ctrls['outerscale'].value())
-        out = numpy.zeros(tensorValues.shape[:2])
+        out = np.zeros(tensorValues.shape[:2])
         stepSize = math.sqrt(2*tensorValues.shape[2] + 0.25) - 0.5
         assert stepSize == math.floor(stepSize)
         index = 0
@@ -417,7 +417,7 @@ class TensorTrace(CtrlNode):
         CtrlNode.__init__(self, name, terminals=terminals)
     def process(self, Tensor, display=True):
         assert len(Tensor.shape) == 3
-        out = numpy.zeros(Tensor.shape[:2])
+        out = np.zeros(Tensor.shape[:2])
         stepSize = math.sqrt(2*Tensor.shape[2] + 0.25) - 0.5
         assert stepSize == math.floor(stepSize)
         index = 0
@@ -443,7 +443,7 @@ node = vigraNode(
         ('radius','intSpin', {'value': 1, 'min': 1, 'max': 1e9 })
     ],
     f=vigra.filters.discClosing,
-    dtypeIn=numpy.uint8
+    dtypeIn=np.uint8
 )
 fclib.registerNodeType(node,[('Image-Disc-Filters',)])
 
@@ -454,7 +454,7 @@ node = vigraNode(
         ('radius','intSpin', {'value': 1, 'min': 1, 'max': 1e9 })
     ],
     f=vigra.filters.discDilation,
-    dtypeIn=numpy.uint8
+    dtypeIn=np.uint8
 )
 fclib.registerNodeType(node,[('Image-Disc-Filters',)])
     
@@ -464,7 +464,7 @@ node = vigraNode(
         ('radius','intSpin', {'value': 1, 'min': 1, 'max': 1e9 })
     ],
     f=vigra.filters.discErosion,
-    dtypeIn=numpy.uint8
+    dtypeIn=np.uint8
 )
 fclib.registerNodeType(node,[('Image-Disc-Filters',)])
 
@@ -475,7 +475,7 @@ node = vigraNode(
         ('radius','intSpin', {'value': 1, 'min': 1, 'max': 1e9 })
     ],
     f=vigra.filters.discMedian,
-    dtypeIn=numpy.uint8
+    dtypeIn=np.uint8
 )
 fclib.registerNodeType(node,[('Image-Disc-Filters',)])
 
@@ -487,7 +487,7 @@ node = vigraNode(
         ('radius','intSpin', {'value': 1, 'min': 1, 'max': 1e9 })
     ],
     f=vigra.filters.discOpening,
-    dtypeIn=numpy.uint8
+    dtypeIn=np.uint8
 )
 fclib.registerNodeType(node,[('Image-Disc-Filters',)])
 
@@ -499,7 +499,7 @@ node = vigraNode(
         ('rank','spin', {'value': 0.50, 'step': 0.1, 'range': [0.0, 1.0]})
     ],
     f=vigra.filters.discRankOrderFilter,
-    dtypeIn=numpy.uint8
+    dtypeIn=np.uint8
 )
 fclib.registerNodeType(node,[('Image-Disc-Filters',)])
 
@@ -560,13 +560,13 @@ class ChannelStacker(Node):
                 inputData  =  kwargs[termName]
 
                 if inputData is not None:
-                    data  = numpy.array(inputData,dtype=numpy.float32)
+                    data  = np.array(inputData,dtype=np.float32)
                     iShape = data.shape
                     reshapedInput = data.reshape([iShape[0],iShape[1],-1])
                     inputList.append(reshapedInput)
         
         if len(inputList)>0:
-            stacked =  numpy.concatenate(inputList,axis=2)
+            stacked =  np.concatenate(inputList,axis=2)
             print "outShape",stacked.shape
         else:
             stacked = None
@@ -582,17 +582,17 @@ fclib.registerNodeType(ChannelStacker, [('Image-Channels',)])
 def _channelAcc(image,accumulation):
 
     if(accumulation==0):
-        return numpy.sum(image,axis=2)
+        return np.sum(image,axis=2)
     elif(accumulation==1):
-        return numpy.product(image,axis=2)
+        return np.product(image,axis=2)
     elif(accumulation==2):
-        return numpy.min(image,axis=2)
+        return np.min(image,axis=2)
     elif(accumulation==3):
-        return numpy.max(image,axis=2)
+        return np.max(image,axis=2)
     elif(accumulation==4):
-        return numpy.mean(image,axis=2)
+        return np.mean(image,axis=2)
     elif(accumulation==5):
-        return numpy.median(image,axis=2)
+        return np.median(image,axis=2)
     else:
         assert False
 
@@ -631,8 +631,8 @@ fclib.registerNodeType(node,[('Image-Channels',)])
 
 def _kammlinie(img,extrema):
 
-    resX=numpy.zeros(img.shape)
-    resY=numpy.zeros(img.shape)
+    resX=np.zeros(img.shape)
+    resY=np.zeros(img.shape)
     if(extrema==0):
         for x in range(img.shape[0]):
             if(x>0 and x<img.shape[0]-1):
@@ -640,16 +640,16 @@ def _kammlinie(img,extrema):
                 A = img[x-1,:]
                 B = img[x  ,:]
                 C = img[x+1,:]
-                R1 = numpy.array(B < A).astype(numpy.float32)
-                R2 = numpy.array(B < C).astype(numpy.float32)
+                R1 = np.array(B < A).astype(np.float32)
+                R2 = np.array(B < C).astype(np.float32)
                 resX[x,:]=R1*R2
         for y in range(img.shape[1]):
             if(y>0 and y<img.shape[1]-1):
                 A = img[:,y-1]
                 B = img[:,y  ]
                 C = img[:,y+1]
-                R1 = numpy.array(B < A).astype(numpy.float32)
-                R2 = numpy.array(B < C).astype(numpy.float32)
+                R1 = np.array(B < A).astype(np.float32)
+                R2 = np.array(B < C).astype(np.float32)
                 resY[:,y]=R1*R2
 
     else :
@@ -659,19 +659,19 @@ def _kammlinie(img,extrema):
                 A = img[x-1,:]
                 B = img[x  ,:]
                 C = img[x+1,:]
-                R1 = numpy.array(B > A).astype(numpy.float32)
-                R2 = numpy.array(B > C).astype(numpy.float32)
+                R1 = np.array(B > A).astype(np.float32)
+                R2 = np.array(B > C).astype(np.float32)
                 resX[x,:]=R1*R2
         for y in range(img.shape[1]):
             if(y>0 and y<img.shape[1]-1):
                 A = img[:,y-1]
                 B = img[:,y  ]
                 C = img[:,y+1]
-                R1 = numpy.array(B > A).astype(numpy.float32)
-                R2 = numpy.array(B > C).astype(numpy.float32)
+                R1 = np.array(B > A).astype(np.float32)
+                R2 = np.array(B > C).astype(np.float32)
                 resY[:,y]=R1*R2
     res = resX+resY 
-    res[numpy.where(res>1)]=1.0
+    res[np.where(res>1)]=1.0
     return res*2.0
 
 
@@ -682,7 +682,7 @@ node = vigraNode(
     ],
     f=_kammlinie,
     doChannelWise=True,
-    dtypeOut=numpy.uint32,
+    dtypeOut=np.uint32,
 )
 fclib.registerNodeType(node,[('Image-Analysis',)])
 
@@ -722,7 +722,7 @@ node = vigraNode(
     ],
     f=_localExtrema,
     doChannelWise=True,
-    dtypeOut=numpy.uint32,
+    dtypeOut=np.uint32,
 )
 fclib.registerNodeType(node,[('Image-Analysis',)])
 
@@ -737,8 +737,8 @@ node = vigraNode(
     ],
     f=_labelImage,
     doChannelWise=True,
-    dtypeIn=numpy.float32,
-    dtypeOut=numpy.uint32
+    dtypeIn=np.float32,
+    dtypeOut=np.uint32
 )
 fclib.registerNodeType(node,[('Image-Analysis',)])
 
@@ -896,9 +896,9 @@ def _normalize(data,newMin,newMax):
 
 
 def _normalizeQuantiles(data,newMin,newMax,quantileLow,quantileHigh):
-    ql,qh = mquantiles(numpy.array(data), prob=[quantileLow,quantileHigh], alphap=0.4, betap=0.4, axis=None, limit=())
+    ql,qh = mquantiles(np.array(data), prob=[quantileLow,quantileHigh], alphap=0.4, betap=0.4, axis=None, limit=())
 
-    d = numpy.clip(numpy.array(data),ql,qh)
+    d = np.clip(np.array(data),ql,qh)
     d-=data.min()
     d/=data.max()
     d*=(newMax-newMin)
@@ -983,7 +983,7 @@ fclib.registerNodeType(Selector,[('Data-Selector',)])
 
 def _sepia(data):
     d=data.copy()
-    m_sepia = numpy.asarray([[0.393, 0.769, 0.189],
+    m_sepia = np.asarray([[0.393, 0.769, 0.189],
                              [0.349, 0.686, 0.168],
                              [0.272, 0.534, 0.131]])
 
@@ -994,7 +994,7 @@ def _sepia(data):
 
     for y in range(data.shape[1]):
         for x in range(data.shape[0]):
-            d[x,y,:]=numpy.dot(d[x,y,:],m_sepia.T)
+            d[x,y,:]=np.dot(d[x,y,:],m_sepia.T)
     return d
 
 
@@ -1178,7 +1178,7 @@ def nifty_sp(
     cgp,grid=superimg.cgpFromLabels(labels)
 
     #imgRGBBig = vigra.sampling.resize(img,cgp.shape,0)
-    #superimg.visualize(imgRGBBig,cgp,numpy.ones(cgp.numCells(1),dtype=numpy.float32), cmap='jet',title='mixed')
+    #superimg.visualize(imgRGBBig,cgp,np.ones(cgp.numCells(1),dtype=np.float32), cmap='jet',title='mixed')
    
     assert labels.shape[2] == 1
     labels = labels.squeeze()
@@ -1189,9 +1189,9 @@ def nifty_sp(
 
 def _permuteLabels(data):
 
-    flat = numpy.array(data).reshape([-1])
-    unique , relabeling = numpy.unique(flat,return_inverse=True)
-    permUnique = numpy.random.permutation(unique)
+    flat = np.array(data).reshape([-1])
+    unique , relabeling = np.unique(flat,return_inverse=True)
+    permUnique = np.random.permutation(unique)
     flatNew = permUnique[relabeling]
     newLabels = flatNew.reshape([data.shape[0],data.shape[1]])
     return newLabels
@@ -1227,19 +1227,19 @@ class Blender(CtrlNode):
         CtrlNode.__init__(self, name, terminals=terminals)
     def process(self, Image1, Image2, display=True):
         if Image1 is None or Image2 is None:
-            return {'BlendedImage': numpy.zeros((0,0))}
+            return {'BlendedImage': np.zeros((0,0))}
         if len(Image1.shape) == 2:
-            Image1 = vigra.VigraArray(Image1[..., numpy.newaxis],
+            Image1 = vigra.VigraArray(Image1[..., np.newaxis],
                                       axistags = vigra.VigraArray.defaultAxistags(3))
         if len(Image2.shape) == 2:
-            Image2 = vigra.VigraArray(Image2[..., numpy.newaxis],
+            Image2 = vigra.VigraArray(Image2[..., np.newaxis],
                                       axistags = vigra.VigraArray.defaultAxistags(3))
         if Image1.shape[:2] != Image2.shape[:2]:
             raise Exception("Image dimensions disagree!")
         if Image1.shape[2] == 1 and Image2.shape[2] == 3:
-            Image1 = numpy.repeat(Image1, 3, axis=2)
+            Image1 = np.repeat(Image1, 3, axis=2)
         elif Image1.shape[2] == 3 and Image2.shape[2] == 1:
-            Image2 = numpy.repeat(Image2, 3, axis=2)
+            Image2 = np.repeat(Image2, 3, axis=2)
         if Image1.shape[2] != Image2.shape[2]:
             raise Exception("Image channels disagree!")
 
@@ -1283,19 +1283,19 @@ class RandomForest(CtrlNode):
         numFeatures = Features.shape[2]
 
         shape = Labels.shape
-        features = Features.astype(numpy.float32).reshape([-1,numFeatures])
-        labels   = Labels.astype(numpy.uint32).reshape(-1)
+        features = Features.astype(np.float32).reshape([-1,numFeatures])
+        labels   = Labels.astype(np.uint32).reshape(-1)
 
 
-        where1 = numpy.where(labels==1)
-        where2 = numpy.where(labels==2)
+        where1 = np.where(labels==1)
+        where2 = np.where(labels==2)
 
         print where1
         print where2
 
         f1  = features[where1[0],:]
         f2  = features[where2[0],:]
-        f= numpy.concatenate([f1,f2],axis=0).astype(numpy.float32)
+        f= np.concatenate([f1,f2],axis=0).astype(np.float32)
 
         print "f1 shape",f1.shape
         print "f2 shape",f2.shape
@@ -1305,7 +1305,7 @@ class RandomForest(CtrlNode):
 
         print "numLabeledPoints",numLabeledPoints
 
-        l= numpy.zeros([f.shape[0],1],dtype=numpy.uint32)
+        l= np.zeros([f.shape[0],1],dtype=np.uint32)
         l[0:len(where1[0])]=0
         l[len(where1[0]):len(where1[0])+len(where2[0])]=1
 
@@ -1318,7 +1318,7 @@ class RandomForest(CtrlNode):
         print "predict"
         probs = rf.predictProbabilities(features)
         print "predict done"
-        probsImg = numpy.array(probs)
+        probsImg = np.array(probs)
         probsImg = probsImg.reshape(tuple(shape)+(2,))
 
         return {
@@ -1338,3 +1338,42 @@ fclib.registerNodeType(RandomForest, [('Image-MachineLearning',)])
 
 
 
+###################################################
+#
+#   numpy
+#
+###################################################
+class NumpyRequire(CtrlNode):
+    """ blend images (weighted), normalize, if neccessary """
+    nodeName = "NumpyRequire"
+
+    dtypes= [
+        np.bool,
+        np.uint8,
+        np.uint16,
+        np.uint32,
+        np.uint64,
+        np.int8,
+        np.int16,
+        np.int32,
+        np.int64,
+        np.float32,
+        np.float64
+    ]
+
+    dtypeStrs = [ str(d) for d in dtypes]
+    uiTemplate = [
+        ('dtype', 'combo', {'values': dtypeStrs})
+    ]
+    def __init__(self, name):
+        terminals = {
+            'dataIn': dict(io='in'),
+            'dataOut': dict(io='out')
+        }
+        CtrlNode.__init__(self, name, terminals=terminals)
+    def process(self, dataIn, display=True):
+
+        return { 'dataOut': 
+            np.require(dataIn,dtype=NumpyRequire.dtypes[  self.ctrls['dtype'].currentIndex()   ])
+        }
+fclib.registerNodeType(NumpyRequire, [('Numpy',)])
