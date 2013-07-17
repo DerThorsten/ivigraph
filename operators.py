@@ -1378,7 +1378,7 @@ fclib.registerNodeType(LearnRandomForest, [('Image-MachineLearning',)])
 
 ###################################################
 #
-#   Learn Random Forest
+#   Predict Random Forest
 #
 ###################################################
 
@@ -1403,6 +1403,31 @@ class PredictRandomForest(CtrlNode):
         return {'Predictions': predictions}
 
 fclib.registerNodeType(PredictRandomForest, [('Image-MachineLearning',)])
+
+
+###################################################
+#
+#   PredictionToImage
+#
+###################################################
+
+class PredictionToImage(CtrlNode):
+    """ reshape predictions to image """
+    nodeName = "PredictionToImage"
+
+    def __init__(self, name):
+        terminals = {
+            'Predictions': dict(io='in'),
+            'ImageForShape': dict(io='in'),
+            'Image': dict(io='out')
+        }
+        CtrlNode.__init__(self, name, terminals=terminals)
+    def process(self, Predictions, ImageForShape, display=True):
+        Image = Predictions.reshape(ImageForShape.shape)
+        return {'Image': Image}
+
+fclib.registerNodeType(PredictionToImage, [('Image-MachineLearning',)])
+
 
 
 
