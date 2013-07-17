@@ -54,9 +54,9 @@ viewDocks = [   Dock("view1", size=(1, 1)), Dock("view2", size=(1, 1)),
 
 area.addDock(d1, 'left')
 area.addDock(viewDocks[0], 'right')
-area.addDock(viewDocks[1], 'below', viewDocks[0])
-area.addDock(viewDocks[2], 'below', viewDocks[0])
 area.addDock(viewDocks[3], 'below', viewDocks[0])
+area.addDock(viewDocks[2], 'below', viewDocks[0])
+area.addDock(viewDocks[1], 'below', viewDocks[0])
 
 viewers = [ ClickImageView(),ClickImageView(),
             ClickImageView(),ClickImageView()]
@@ -102,13 +102,13 @@ fc.setInput(dataIn=data)
 v1Node = fc.createNode('ImageView', pos=(0, -150))
 v1Node.setView(viewers[0])
 
-v2Node = fc.createNode('ImageView', pos=(0, -150))
+v2Node = fc.createNode('ImageView', pos=(150, -150))
 v2Node.setView(viewers[1])
 
-v3Node = fc.createNode('ImageView', pos=(0, -150))
+v3Node = fc.createNode('ImageView', pos=(300, -150))
 v3Node.setView(viewers[2])
 
-v4Node = fc.createNode('ImageView', pos=(0, -150))
+v4Node = fc.createNode('ImageView', pos=(450, -150))
 v4Node.setView(viewers[3])
 
 
