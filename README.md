@@ -30,6 +30,8 @@ Known Bugs:
 Version
 =============
 
+- 0.0.5.4   
+    - added numpy require node
 - 0.0.5.3   
 	- readded  the functionality to switch between rgb,lab,and 1-channel 
 	- removed unused ui templates from  viewNodes
