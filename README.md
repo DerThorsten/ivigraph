@@ -22,13 +22,15 @@ Dependencies:
 Known Bugs:
 =============
 
-- save does not work with the default pyqtgraph version
-- load does not work with the patched version of pyqtgraph
+- load:
+	- one might need change the histogram range a tiny bit to
+	  refresh the image
 - sometimes one gets floating point error when deleting edges (no idea what is going on)
 
 Version
 =============
 
+- 0.0.5.0 - alpha  (INITAL HACKY VERSION OF SAVE AND LOAD IS WORKING)
 - 0.0.4.1 - alpha  (added channel stacker with flexible number of input terminal)
 - 0.0.4.0 - alpha  (changed main layout to a "dockarea")
 - 0.0.3.5 - alpha  (improved and fixed clear labels)

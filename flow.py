@@ -6,7 +6,7 @@ We implement a couple of simple image processing nodes.
 """
 
 
-from pyqtgraph.flowchart import Flowchart, Node
+from pyqtgraph.flowchart import Flowchart, Node,FlowchartCtrlWidget
 import pyqtgraph.flowchart.library as fclib
 from pyqtgraph.flowchart.library.common import CtrlNode
 from pyqtgraph.Qt import QtGui, QtCore
@@ -23,8 +23,7 @@ from pyqtgraph.dockarea import *
 app = QtGui.QApplication([])
 
 
-
-
+import types
 
 
 
@@ -37,6 +36,12 @@ win.setCentralWidget(area)
 win.resize(1000,500)
 win.setWindowTitle('pyqtgraph example: dockarea')
 
+
+
+
+
+
+
 ## Create an empty flowchart with a single input and output
 fc = Flowchart(terminals={
     'dataIn': {'io': 'in'},
@@ -44,13 +49,21 @@ fc = Flowchart(terminals={
 })
 w = fc.widget()
 
+
+
+
+
+
+
+
+
 #layout.addWidget(fc.widget(), 0, 0, 0, 1)
 
 
 d1  = Dock("Controll", size=(1, 1))
 
-viewDocks = [   Dock("view1", size=(1, 1)), Dock("view2", size=(1, 1)),
-                Dock("view3", size=(1, 1)), Dock("view4", size=(1, 1)) ]
+viewDocks = [   Dock("view0", size=(1, 1)), Dock("view1", size=(1, 1)),
+                Dock("view2", size=(1, 1)), Dock("view3", size=(1, 1)) ]
 
 area.addDock(d1, 'left')
 area.addDock(viewDocks[0], 'right')
@@ -112,6 +125,75 @@ v4Node = fc.createNode('ImageView', pos=(450, -150))
 v4Node.setView(viewers[3])
 
 
+"""
+The following will fix save and loading
+
+"""
+
+import os
+def setCurrentFileFixed(self, fileName):
+    self.currentFileName = fileName
+    if fileName is None:
+        self.ui.fileNameLabel.setText("<b>[ new ]</b>")
+    else:
+        self.ui.fileNameLabel.setText("<b>%s</b>" % os.path.split(str(self.currentFileName))[1])
+    self.resizeEvent(None)
+FlowchartCtrlWidget.setCurrentFile=setCurrentFileFixed
+def loadFile(self, fileName=None, startDir=None,nodes=(v1Node,v2Node,v3Node,v4Node),viewers=viewers):
+    import pyqtgraph.configfile as configfile
+    if fileName is None:
+        if startDir is None:
+            startDir = self.filePath
+        if startDir is None:
+            startDir = '.'
+        self.fileDialog = pg.FileDialog(None, "Load Flowchart..", startDir, "Flowchart (*.fc)")
+        #self.fileDialog.setFileMode(QtGui.QFileDialog.AnyFile)
+        #self.fileDialog.setAcceptMode(QtGui.QFileDialog.AcceptSave) 
+        self.fileDialog.show()
+        self.fileDialog.fileSelected.connect(self.loadFile)
+        return
+        ## NOTE: was previously using a real widget for the file dialog's parent, but this caused weird mouse event bugs..
+        #fileName = QtGui.QFileDialog.getOpenFileName(None, "Load Flowchart..", startDir, "Flowchart (*.fc)")
+    fileName = str(fileName)
+    state = configfile.readConfigFile(fileName)
+    self.restoreState(state, clear=True)
+    self.viewBox.autoRange()
+    #self.emit(QtCore.SIGNAL('fileLoaded'), fileName)
+    self.sigFileLoaded.emit(fileName)
+
+    for name, node in self._nodes.items():
+
+        print name
+        if isinstance(node,v1Node.__class__):
+            #node.view.updateNorm()
+            #node.view.normRadioChanged()
+            #node.update()
+            #node.update()
+            if name =='ImageView.0':
+                node.setView(viewers[0])
+            if name =='ImageView.1':
+                node.setView(viewers[1])
+            if name =='ImageView.2':
+                node.setView(viewers[2])
+            if name =='ImageView.3':
+                node.setView(viewers[3])
+    for name, node in self._nodes.items():
+        print name
+        node.update()
+
+    for name, node in self._nodes.items():
+
+        print name
+        if isinstance(node,v1Node.__class__):
+            node.view.updateNorm()
+            node.view.normRadioChanged()
+            node.view.ui.histogram.update()
+            node.view.ui.histogram.imageChanged()
+            node.update()
+
+    #for node,viewer in zip(nodes,viewers):
+    #    node.setView(viewer)
+fc.loadFile=types.MethodType(loadFile,fc)
 
 fNode = fc.createNode('GaussianGradientMagnitude', pos=(0, 0))
 fc.connectTerminals(fc['dataIn'], fNode['dataIn'])
