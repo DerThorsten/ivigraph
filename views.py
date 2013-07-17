@@ -22,6 +22,7 @@ class ImageAndLabelItem(pg.ImageItem):
 
 		self.labelImage = None 
 		self.drawMask = None
+		self.labelShape = None
 		print "non setter has been called"
 
 	def redrawLabels(self,redrawUnlabled=False,updateImage=False):
@@ -40,9 +41,11 @@ class ImageAndLabelItem(pg.ImageItem):
 			whereL = numpy.where(self.labelImage==0)
 			nl =len(whereL[0])
 			if nl>0:
-				self.image[whereL[0],whereL[1],:]=self.clickImageView.bufferImage[whereL[0],whereL[1],:]
+				self.image[whereL[0],whereL[1],:]=0.0
 		if updateImage:
 			self.updateImage()
+
+
 	def drawAt(self, pos, ev=None):
 		if self.clickImageView.labelMode:
 			if self.labelImage is None:
@@ -81,7 +84,7 @@ class ImageAndLabelItem(pg.ImageItem):
 				if self.currentLabel!=0: 
 					self.image[ts] = self.currentLabelColor
 				else:
-					self.image[ts] = self.clickImageView.bufferImage[ts]
+					self.image[ts] = 0
 				self.updateImage()
 		else : 
 			pass
@@ -111,41 +114,44 @@ class ClickImageView(pg.ImageView):
 
 		self.setupMyUi()
 
+		
+		self.imageItemLabels = ImageAndLabelItem()
+		self.view.addItem(self.imageItemLabels)
+		self.imageItemLabels.clickImageView=self
+		self.labelImage      = None
+		self.labelPaintImage = None
 
-		self.clicks=[]
+
 		self.currentLabel=1
-		self.imageItem.currentLabel=1
+		self.imageItemLabels.currentLabel=1
+		self.imageItemLabels.numLabels=10
 		self.numLabels=10
-		self.imageItem.numLabels=10
+
 	   
 		self.imageItem.clickImageView=self
 
 		self.brushSize = 3
 
-		self.labelColors =numpy.ones([self.numLabels,3])
-		self.labelColors[0,:]=0,0,0
-		self.labelColors[1,:]=1,0,0
-		self.labelColors[2,:]=0,1,0
-		self.labelColors[3,:]=0,0,1
+		self.labelColors =numpy.ones([self.numLabels,4])*0.5
+		self.labelColors[0,:]=0,0,0,0.5
+		self.labelColors[1,:]=1,0,0,0.5
+		self.labelColors[2,:]=0,1,0,0.5
+		self.labelColors[3,:]=0,0,1,0.5
 
-		self.labelColors[4,:]=0.8,0.5,0.0
-		self.labelColors[5,:]=0.5,0.8,0.0
-		self.labelColors[6,:]=0.0,0.5,0.8
+		self.labelColors[4,:]=0.8,0.5,0.0,0.5
+		self.labelColors[5,:]=0.5,0.8,0.0,0.5
+		self.labelColors[6,:]=0.0,0.5,0.8,0.5
 
 
-		self.labelColors[7,:]=0.8,0.4,0.2
-		self.labelColors[8,:]=0.4,0.8,0.3
-		self.labelColors[9,:]=0.2,0.4,0.8
+		self.labelColors[7,:]=0.8,0.4,0.2,0.5
+		self.labelColors[8,:]=0.4,0.8,0.3,0.5
+		self.labelColors[9,:]=0.2,0.4,0.8,0.5
 
 		self.labelColors*=255.0
 		self.bufferImage = None
 
 
-		self.imageItem2 = pg.ImageItem()
-		self.view.addItem(self.imageItem2)
-
 		#randImg=numpy.random.rand(100,200,4)*255
-
 		#self.imageItem2.updateImage(randImg)
 
 	def setupMyUi(self):    
@@ -308,7 +314,7 @@ class ClickImageView(pg.ImageView):
 		def sliderBrushSizeValueChanged(value):
 			self.labelBrushSize.setText(str(value))
 			self.enableLabelMode(size=value,setLevels=False)
-			self.imageItem.brushSize=brushSize
+			self.imageItem.brushSize=value
 		self.sliderBrushSize.valueChanged.connect(sliderBrushSizeValueChanged) 
 
 		# - toggle label mode button
@@ -331,9 +337,9 @@ class ClickImageView(pg.ImageView):
 
 		def buttonClearLabelsReleased():
 			print "clear button"
-			if self.imageItem.labelImage is not None:
-				self.imageItem.labelImage[:]=0
-			self.imageItem.redrawLabels(redrawUnlabled=True,updateImage=True)
+			if self.imageItemLabels.labelImage is not None:
+				self.imageItemLabels.labelImage[:]=0
+			self.imageItemLabels.redrawLabels(redrawUnlabled=True,updateImage=True)
 		self.buttonClearLabels.released.connect(buttonClearLabelsReleased)
 
 
@@ -342,6 +348,24 @@ class ClickImageView(pg.ImageView):
 		self.checkboxLabelMode.stateChanged.connect(checkboxLabelModeValueChanged) 
 
 
+	def mySetImage(self,image):
+		print "call set image from my set image"
+		imgShape = image.shape[0],image.shape[1]
+		if self.imageItemLabels.labelImage  is None :
+			print "first setup of labels"
+			self.imageItemLabels.labelImage   = numpy.zeros(imgShape)
+			self.labelPaintImage  			  = numpy.zeros(imgShape+(4,))
+			self.imageItemLabels.updateImage(self.labelPaintImage)
+		else :
+			labelShape = self.imageItemLabels.labelImage.shape 
+			if tuple(imgShape)==tuple(labelShape):
+				print "shape is matching"
+			else:
+				print "shape is not matching"
+				self.imageItemLabels.labelImage   = numpy.zeros(imgShape)
+				self.labelPaintImage  			  = numpy.zeros(imgShape+(4))
+				self.imageItemLabels.updateImage(self.labelPaintImage)
+		self.setImage(image)
 
 	def toBuffer(self,image):
 		if self.bufferImage is None :
@@ -358,11 +382,11 @@ class ClickImageView(pg.ImageView):
 
 	def setCurrentLabel(self,label):
 		self.currentLabel = label
-		self.imageItem.currentLabel = label 
-		self.imageItem.currentLabelColor = self.labelColors[self.currentLabel,:]
-		for x in xrange(self.imageItem.drawKernel.shape[0]):
-			for y in xrange(self.imageItem.drawKernel.shape[1]):
-				self.imageItem.drawKernel[x,y,:]=self.labelColors[self.currentLabel,:]
+		self.imageItemLabels.currentLabel = label 
+		self.imageItemLabels.currentLabelColor = self.labelColors[self.currentLabel,:]
+		for x in xrange(self.imageItemLabels.drawKernel.shape[0]):
+			for y in xrange(self.imageItemLabels.drawKernel.shape[1]):
+				self.imageItemLabels.drawKernel[x,y,:]=self.labelColors[self.currentLabel,:]
 
 	def keyPressEvent(self, ev):
 		print ev.key()
@@ -422,12 +446,12 @@ class ClickImageView(pg.ImageView):
 	def enableLabelMode(self,viewNode=None,size=None,setLevels=True):    
 		if size is None :
 			size = self.sliderBrushSize.sliderPosition()    
-		kern = numpy.ones([size,size,3])
+		kern = numpy.ones([size,size,4])
 		for x in xrange(kern.shape[0]):
 			for y in xrange(kern.shape[1]):
 				kern[x,y,:]=self.labelColors[self.currentLabel,:]
-		self.imageItem.currentLabelColor = self.labelColors[self.currentLabel,:]
-		self.imageItem.setDrawKernel(kern, mask=kern, center=(int(size)/2,int(size)/2), mode='label')
+		self.imageItemLabels.currentLabelColor = self.labelColors[self.currentLabel,:]
+		self.imageItemLabels.setDrawKernel(kern, mask=kern, center=(int(size)/2,int(size)/2), mode='label')
 		
 
 
@@ -497,7 +521,7 @@ class ImageViewNode(CtrlNode):
 
 			## the 'data' argument is the value given to the 'data' terminal
 			if data is None:
-				self.view.setImage(np.zeros((1,1))) # give a blank array to clear the view
+				self.view.mySetImage(np.zeros((1,1))) # give a blank array to clear the view
 			else:
 				#m get constrolls
 				channel     = self.ctrls['channel'].value()
@@ -507,7 +531,7 @@ class ImageViewNode(CtrlNode):
 				ndim =data.ndim 
 				if(ndim==2 or (ndim==3 and data.shape[2]==1) ):
 					print "display grayscaled"
-					self.view.setImage(data.copy())
+					self.view.mySetImage(data.copy())
 				elif(ndim==3):
 					print "display some multichannel"
 					# number of channels
@@ -517,19 +541,19 @@ class ImageViewNode(CtrlNode):
 						# check channels
 						if nC !=3 : 
 							raise RuntimeError("wrong number of channels for rgb image")
-						self.view.setImage(data.copy())
+						self.view.mySetImage(data.copy())
 					elif displayType=='LabType':
 						print "display LAB"
 						# check channels
 						if nC !=3 : 
 							raise RuntimeError("wrong number of channels for lab image")
-						self.view.setImage(vigra.colors.transform_Lab2RGB(data))
+						self.view.mySetImage(vigra.colors.transform_Lab2RGB(data))
 					elif displayType=='MultiChannel':
 						print "display MultiChannel"
 						# check SELECTED channels
 						if channel >= nC :
 							raise RuntimeError("channel index is out of bounds")
-						self.view.setImage(data[:,:,channel].copy())
+						self.view.mySetImage(data[:,:,channel].copy())
 					else:
 						assert False
 
@@ -538,7 +562,7 @@ class ImageViewNode(CtrlNode):
 		if self.view.imageItem.labelImage is not None:
 			self.view.imageItem.redrawLabels(updateImage=False)
 
-		return {'view': self.view,'labelImage':self.view.imageItem.labelImage}
+		return {'view': self.view,'labelImage':self.view.imageItemLabels.labelImage}
 
 
 ## register the class so it will appear in the menu of node types.
