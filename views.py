@@ -13,6 +13,7 @@ import collections
 
 import functools
 
+from nodegraphics import CustomNodeGraphicsItem
 
 class ImageAndLabelItem(pg.ImageItem):
 	def __init__(self,*args,**kwargs):
@@ -435,6 +436,10 @@ class ClickImageView(pg.ImageView):
 		if viewNode is not None:
 			self.setCurrentLabel(1)
 			self._viewNode = viewNode
+
+
+
+
 
 
 

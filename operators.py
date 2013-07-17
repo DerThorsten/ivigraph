@@ -10,8 +10,8 @@ import vigra
 import math
 import functools
 from scipy.stats.mstats import mquantiles
-
-
+from collections import OrderedDict
+from nodegraphics import CustomNodeGraphicsItem
 
 def convertNh(nh):
     if nh == 0 : neighborhood = 4
@@ -526,6 +526,58 @@ fclib.registerNodeType(node,[('Image-Tensors',)])
 #   CHANNELS
 #
 ###################################################
+class ChannelStacker(Node):
+    """ blend images (weighted), normalize, if neccessary """
+    nodeName = "ChannelStacker"
+
+    uiTemplate=[
+    ]
+
+    def __init__(self, name):
+        """
+        terminals = {
+            'Data0': dict(io='in'),
+            'Data1': dict(io='in'),
+            'dataOut': dict(io='out'),
+        }
+        """
+
+        terminals = OrderedDict()
+        terminals['Input']=dict(io='in')
+        terminals['dataOut']=dict(io='out')
+        Node.__init__(self, name, terminals=terminals,allowAddInput=True)
+
+
+    def process(self, *args,**kwargs):
+
+        inputList = []
+        inputShape = None
+        # iterate over all terminals in ordere they where added
+        for termName in self.terminals.keys():
+            term = self.terminals[termName]
+            if termName in self._inputs:
+                print "kwargs[%s]"%termName, kwargs[termName]
+                inputData  =  kwargs[termName]
+
+                if inputData is not None:
+                    data  = numpy.array(inputData,dtype=numpy.float32)
+                    iShape = data.shape
+                    reshapedInput = data.reshape([iShape[0],iShape[1],-1])
+                    inputList.append(reshapedInput)
+        
+        if len(inputList)>0:
+            stacked =  numpy.concatenate(inputList,axis=2)
+            print "outShape",stacked.shape
+        else:
+            stacked = None
+        return {'dataOut':stacked}
+
+    def graphicsItem(self):
+        if self._graphicsItem is None:
+            self._graphicsItem = CustomNodeGraphicsItem(self,(150,200))
+        return self._graphicsItem
+
+fclib.registerNodeType(ChannelStacker, [('Image-Channels',)])
 
 def _channelAcc(image,accumulation):
 
@@ -1154,52 +1206,6 @@ fclib.registerNodeType(node,[('Image-Segmentation',)])
 
 
 
-
-
-###################################################
-#
-#   USER NODE
-#
-###################################################
-class Paint(CtrlNode):
-    """ (seeded) watershed"""
-    nodeName = "Paint"
-
-    uiTemplate=[
-        ('eventMode', 'combo', {'values': ['recordClicks', 'clearAndIgnore'], 'index': 0}),
-        ('FlipForUpdate', 'check',   {'value': False})
-
-    ]
-    def __init__(self, name):
-        terminals = {
-            'dataIn': dict(io='in'),
-            'view': dict(io='in'),     
-            'dataOut': dict(io='out')  # to specify whether it is input or output
-        }                              # other more advanced options are available
-                                       # as well..
-        CtrlNode.__init__(self, name, terminals=terminals)
-    def process(self, dataIn,view, display=True):
-        dataOut=dataIn.copy()
-        recordClicks = self.ctrls['eventMode'].currentIndex()    
-
-        if (recordClicks==0):
-            print "clicks in node",len(view.clicks)
-
-            for x,y in view.clicks:
-                dataOut[x,y,:]=0.0
-        else:
-            print "reset node"
-            view.clicks=[]
-        return {'dataOut':dataOut}
-        
-
-        
-fclib.registerNodeType(Paint ,[('Image-Paint',)])
-
-
-
-
-
 ###################################################
 #
 #   Blender
@@ -1245,7 +1251,49 @@ class Blender(CtrlNode):
         return {'BlendedImage': weight*Image1 + (1-weight)*Image2}
 
 
-fclib.registerNodeType(Blender, [('Operators',)])
+###################################################
+#
+#   Random Forest
+#
+###################################################
+
+
+class RandomForest(CtrlNode):
+    """ blend images (weighted), normalize, if neccessary """
+    nodeName = "RandomForest"
+
+    uiTemplate=[
+        ('predictLabels', 'check',   {'value': True}),
+        ('predictProbs', 'check',   {'value': True}),
+        ('numTrees','intSpin', {'value': 10, 'min': 0, 'max': 1e9 })
+    ]
+
+    def __init__(self, name):
+        terminals = {
+            'Features': dict(io='in'),
+            'Labels': dict(io='in'),
+            'RF': dict(io='out'),
+            'PredictedLabels': dict(io='out'),
+            'PredictedProbs': dict(io='out'),
+            'OOB-Error': dict(io='out'),
+        }
+        CtrlNode.__init__(self, name, terminals=terminals)
+    def process(self, Features, Labels, display=True):
+
+        return {
+            'RF': None,
+            'PredictedLabels' : None,
+            'PredictedProbs'  : None,
+            'OOB-Error'       : None
+        }
+
+    def graphicsItem(self):
+        if self._graphicsItem is None:
+            self._graphicsItem = CustomNodeGraphicsItem(self,(150,150))
+        return self._graphicsItem
+
+
+fclib.registerNodeType(RandomForest, [('Image-MachineLearning',)])
 
 
 
