@@ -1411,7 +1411,13 @@ class FeatureStackToMatrix(CtrlNode):
             feature_matrix[..., index] = feature[label_indices]
         return {'FeatureMatrix': feature_matrix, 'LabelVector': label_vector}
             
-        
+    
+    def graphicsItem(self):
+        if self._graphicsItem is None:
+            self._graphicsItem = CustomNodeGraphicsItem(self,(200,100))
+        return self._graphicsItem
+
+
 fclib.registerNodeType(FeatureStackToMatrix, [('Image-MachineLearning',)])
 
 ###################################################
