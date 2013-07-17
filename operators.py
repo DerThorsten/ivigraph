@@ -1347,7 +1347,7 @@ fclib.registerNodeType(RandomForest, [('Image-MachineLearning',)])
 
 class LearnRandomForest(CtrlNode):
     """ train a random forest classifier """
-    nodeName = "LearnRandomForst"
+    nodeName = "LearnRandomForest"
 
     uiTemplate=[
         ('number of trees', 'intSpin', {'value': 100, 'min': 0, 'max': 1e9 })
@@ -1375,6 +1375,34 @@ class LearnRandomForest(CtrlNode):
         return {'RandomForest': rf, 'OOB-Error': oob}
 
 fclib.registerNodeType(LearnRandomForest, [('Image-MachineLearning',)])
+
+###################################################
+#
+#   Learn Random Forest
+#
+###################################################
+
+class PredictRandomForest(CtrlNode):
+    """ predict labels using a random forest classifier """
+    nodeName = "LearnRandomForest"
+
+    def __init__(self, name):
+        terminals = {
+            'FeatureMatirx': dict(io='in'),
+            'RandomForest': dict(io='in'),
+            'Predictions': dict(io='out')
+        }
+        CtrlNode.__init__(self, name, terminals=terminals)
+    def process(self, FeatureMatrix, RandomForest, display=True):
+        if FeatureMatrix is None:
+            return
+        if FeatureMatrix.dtype is not np.float32:
+            FeatureMatrix = FeatureMatrix.astype(np.float32)
+        predictions = rf.predictProbabilities(features)
+
+    return {'Predictions': predictions}
+
+fclib.registerNodeType(PredictRandomForest, [('Image-MachineLearning',)])
 
 
 
