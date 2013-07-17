@@ -1338,30 +1338,7 @@ fclib.registerNodeType(RandomForest, [('Image-MachineLearning',)])
 
 
 
-###################################################
-#
-#   numpy.where
-#
-###################################################
-class NumpyWhere(CtrlNode):
-    """ blend images (weighted), normalize, if neccessary """
-    nodeName = "numpy.where"
 
-    uiTemplate=[('ignore', 'spin', {'value' : 0, 'step' : 1, 'range': [0, None]})]
-
-    def __init__(self, name):
-        terminals = {
-            'Image': dict(io='in'),
-            'Indices': dict(io='out')
-        }
-        CtrlNode.__init__(self, name, terminals=terminals)
-    def process(self, Image, display=True):
-        ignore_value = self.ctrls['ignore'].value()
-        if ignore_value is not None:
-            return {'Indices': np.where(Image != ignore_value)}
-        else:
-            return {'Indices': None}
-fclib.registerNodeType(NumpyWhere, [('Misc',)])
 
 
 
@@ -1453,3 +1430,30 @@ class NumpyRequire(CtrlNode):
             np.require(dataIn,dtype=NumpyRequire.dtypes[  self.ctrls['dtype'].currentIndex()   ])
         }
 fclib.registerNodeType(NumpyRequire, [('Numpy',)])
+
+
+
+###################################################
+#
+#   numpy.where
+#
+###################################################
+class NumpyWhere(CtrlNode):
+    """ blend images (weighted), normalize, if neccessary """
+    nodeName = "numpy.where"
+
+    uiTemplate=[('ignore', 'spin', {'value' : 0, 'step' : 1, 'range': [0, None]})]
+
+    def __init__(self, name):
+        terminals = {
+            'Image': dict(io='in'),
+            'Indices': dict(io='out')
+        }
+        CtrlNode.__init__(self, name, terminals=terminals)
+    def process(self, Image, display=True):
+        ignore_value = self.ctrls['ignore'].value()
+        if ignore_value is not None:
+            return {'Indices': np.where(Image != ignore_value)}
+        else:
+            return {'Indices': None}
+fclib.registerNodeType(NumpyWhere, [('Numpy',)])
