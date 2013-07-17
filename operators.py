@@ -1384,11 +1384,11 @@ fclib.registerNodeType(LearnRandomForest, [('Image-MachineLearning',)])
 
 class PredictRandomForest(CtrlNode):
     """ predict labels using a random forest classifier """
-    nodeName = "LearnRandomForest"
+    nodeName = "PredictRandomForest"
 
     def __init__(self, name):
         terminals = {
-            'FeatureMatirx': dict(io='in'),
+            'FeatureMatrix': dict(io='in'),
             'RandomForest': dict(io='in'),
             'Predictions': dict(io='out')
         }
@@ -1398,9 +1398,9 @@ class PredictRandomForest(CtrlNode):
             return
         if FeatureMatrix.dtype is not np.float32:
             FeatureMatrix = FeatureMatrix.astype(np.float32)
-        predictions = rf.predictProbabilities(features)
+        predictions = RandomForest.predictProbabilities(FeatureMatrix)
 
-    return {'Predictions': predictions}
+        return {'Predictions': predictions}
 
 fclib.registerNodeType(PredictRandomForest, [('Image-MachineLearning',)])
 
