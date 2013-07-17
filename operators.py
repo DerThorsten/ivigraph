@@ -1249,6 +1249,7 @@ class Blender(CtrlNode):
             Image2 = _normalize(Image2, 0, normalization)
         weight = self.ctrls['weight'].value()
         return {'BlendedImage': weight*Image1 + (1-weight)*Image2}
+fclib.registerNodeType(Blender, [('Operators',)])
 
 
 ###################################################
