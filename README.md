@@ -30,6 +30,9 @@ Known Bugs:
 Version
 =============
 
+- 0.0.5.3 - alpha  
+	- readded  the functionality to switch between rgb,lab,and 1-channel 
+	- removed unused ui templates from  viewNodes
 - 0.0.5.2 - alpha  (proof of concept for machine learning with random forest)
 - 0.0.5.1 - alpha  (labeling uses multiple ImageItems in a layerd fashion)
 - 0.0.5.0 - alpha  (INITAL HACKY VERSION OF SAVE AND LOAD IS WORKING)

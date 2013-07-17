@@ -23,10 +23,9 @@ class ImageAndLabelItem(pg.ImageItem):
 		self.labelImage = None 
 		self.drawMask = None
 		self.labelShape = None
-		print "non setter has been called"
 
 	def redrawLabels(self,redrawUnlabled=False,updateImage=False):
-		print "in redraw labels"
+		#print "in redraw labels"
 
 		oldLabel = self.currentLabel
 		for l in range(1,self.numLabels):
@@ -103,8 +102,7 @@ class ImageAndLabelItem(pg.ImageItem):
 
 class ClickImageView(pg.ImageView):
 
-	def currentNumberOfChannels(self):
-		return 3
+
 	def maximumNumberOfLabels(self):
 		return 10
 
@@ -112,8 +110,11 @@ class ClickImageView(pg.ImageView):
 	def __init__(self,*args,**kwargs):
 		super(ClickImageView, self).__init__(imageItem=ImageAndLabelItem())
 
+		self.srcImage = None
+		self.currentNumberOfChannels= 0
 		self.setupMyUi()
 
+		
 		
 		self.imageItemLabels = ImageAndLabelItem()
 		self.view.addItem(self.imageItemLabels)
@@ -221,14 +222,15 @@ class ClickImageView(pg.ImageView):
 		#self.belowImgBox.addStretch(1)    
 
 		self.comboBoxImageType = QtGui.QComboBox()
-		self.comboBoxImageType.addItems(['Rgb','Lab','1Chn'])
+		self.comboBoxImageType.addItems(['Rgb','Lab','1-Channel'])
 		self.channelSliderChannelDesc=QtGui.QLabel("Channel:")
 		self.sliderChannels = QtGui.QSlider(QtCore.Qt.Horizontal, self)
 		self.sliderChannels.setGeometry(10, 10, 200, 30)
 		self.sliderChannels.setMinimum(0)
-		self.sliderChannels.setMaximum(self.currentNumberOfChannels())
+		self.sliderChannels.setMaximum(1)
 		self.sliderChannels.setTickInterval(1)
 		self.sliderChannels.setSingleStep(1)
+		self.sliderChannels.setValue(0)
 		self.labelCurrentChannel=QtGui.QLabel(str(self.sliderChannels.sliderPosition()))
 
 		self.imgCtrBox.addWidget(self.comboBoxImageType)
@@ -284,25 +286,35 @@ class ClickImageView(pg.ImageView):
 		#
 		####################
 
+
 		# - image type changed
 		def comboBoxImageTypeChanged(index):
-			currentText = self.comboBoxImageType.currentText()
-			if currentText in ('Rgb','Lab'):
+			self.imageType = self.comboBoxImageType.currentText()
+			if self.imageType in ('Rgb','Lab'):
 				self.channelSliderChannelDesc.setEnabled(False)
 				self.labelCurrentChannel.setEnabled(False)
+				self.sliderChannels.setValue(0)
+				self.labelCurrentChannel.setText('0')
+				self.currentChannel =  0
 				self.sliderLabels.setEnabled(False)
-			elif currentText == '1Chn':
+			elif self.imageType == '1-Channel':
 				self.channelSliderChannelDesc.setEnabled(True)
 				self.labelCurrentChannel.setEnabled(True)
 				self.sliderLabels.setEnabled(True)
+			if (self.srcImage is not None):
+				self.mySetImage(self.srcImage)
 		comboBoxImageTypeChanged(0)
 		self.comboBoxImageType.currentIndexChanged.connect(comboBoxImageTypeChanged)   
 
 		# - channel changed
 		def sliderChannelValueChanged(value):
+			self.currentChannel =  value
 			self.labelCurrentChannel.setText(str(value))
+			if (self.srcImage is not None):
+				self.mySetImage(self.srcImage)
 		self.sliderChannels.valueChanged.connect(sliderChannelValueChanged) 
 
+		sliderChannelValueChanged(0)
 
 		# - label changed
 		def sliderLabelsValueChanged(value):
@@ -349,25 +361,47 @@ class ClickImageView(pg.ImageView):
 
 
 	def mySetImage(self,image):
-		print "call set image from my set image"
+		self.srcImage = image
+		#print "call set image from my set image"
 		imgShape = image.shape[0],image.shape[1]
 		if self.imageItemLabels.labelImage  is None :
-			print "first setup of labels"
+			#print "first setup of labels"
 			self.imageItemLabels.labelImage   = numpy.zeros(imgShape)
 			self.labelPaintImage  			  = numpy.zeros(imgShape+(4,))
 			self.imageItemLabels.updateImage(self.labelPaintImage)
 		else :
 			labelShape = self.imageItemLabels.labelImage.shape 
 			if tuple(imgShape)==tuple(labelShape):
-				print "shape is matching"
+				pass#print "shape is matching"
 			else:
-				print "shape is not matching"
+				#print "shape is not matching"
 				self.imageItemLabels.labelImage   = numpy.zeros(imgShape)
-				self.labelPaintImage  			  = numpy.zeros(imgShape+(4))
+				self.labelPaintImage  			  = numpy.zeros(imgShape+(4,))
 				self.imageItemLabels.updateImage(self.labelPaintImage)
-		self.setImage(image)
 
 
+		if image.ndim == 2 :
+			self.currentNumberOfChannels = 0
+			self.setImage(image)
+		elif image.ndim==3 :
+			self.currentNumberOfChannels =image.shape[2]
+			#print "cnc",self.currentNumberOfChannels
+			if self.imageType == 'Rgb':
+				if self.currentNumberOfChannels!=3 and self.currentNumberOfChannels!=4 :
+					raise RuntimeError("Rgb image need 3 or 4 channels+")
+				self.setImage(image)
+			elif self.imageType == 'Lab':
+				if self.currentNumberOfChannels!=3 and self.currentNumberOfChannels!=4 :
+					raise RuntimeError("Lab image need 3 or 4 channels")
+				labImg = vigra.colors.transform_Lab2RGB(image[:,:,0:3].astype(numpy.float32))
+				if self.currentChannel == 4:
+					labImg[:,:,3]=image[:,:,3]
+				self.setImage(labImg)
+			elif self.imageType == '1-Channel':
+				self.setImage(image[:,:,self.currentChannel])
+
+
+		self.sliderChannels.setMaximum(self.currentNumberOfChannels-1)
 
 
 	def setCurrentLabel(self,label):
@@ -382,7 +416,7 @@ class ClickImageView(pg.ImageView):
 		print ev.key()
 
 		if ev.key()  == QtCore.Qt.Key_U:
-			print "update dependentNodes"
+			#print "update dependentNodes"
 			for d in self._viewNode.dependentNodes():
 			   d.update()
 
@@ -470,9 +504,7 @@ class ImageViewNode(CtrlNode):
 
 	imageTypes  = ['RgbType','LabType','MultiChannel']
 	uiTemplate=[
-		('imageType', 'combo', {'values': imageTypes, 'index': 0}),
-		('channel','intSpin', {'value': 0, 'min': 0, 'max': 1e9 }),
-		#('brushSize','intSpin', {'value': 5, 'min': 1, 'max': 99 })
+		('_fake_param','intSpin', {'value': 5, 'min': 1, 'max': 99 })
 	]
 	def __init__(self, name):
 		self.view = None
@@ -480,8 +512,6 @@ class ImageViewNode(CtrlNode):
 		CtrlNode.__init__(  self, name, 
 							terminals={
 								'data'  : {'io':'in'},
-								'data2' : {'io':'in'},
-								'view':    {'io':'out'},
 								'labelImage':{'io':'out'}
 							}
 		)
@@ -491,68 +521,18 @@ class ImageViewNode(CtrlNode):
 		self.view.enableLabelMode(self)
 
 
-	def process(self, data,data2=None, display=True):
-
-		if data.ndim==3 and data.shape[2]==3:
-
-			for c in range(3):
-				data[:,:,c]-=data[:,:,c].min()
-				data[:,:,c]/=data[:,:,c].max()
-				data[:,:,c]*=255.0
-
-		#self.view.toBuffer(data)
-		displayType = ImageViewNode.imageTypes[self.ctrls['imageType'].currentIndex()]
-
-		
-
-		## if process is called with display=False, then the flowchart is being operated
-		## in batch processing mode, so we should skip displaying to improve performance.
+	def process(self, data, display=True):
 		if display and self.view is not None:
-
 			## the 'data' argument is the value given to the 'data' terminal
 			if data is None:
 				self.view.mySetImage(np.zeros((1,1))) # give a blank array to clear the view
 			else:
-				#m get constrolls
-				channel     = self.ctrls['channel'].value()
-				displayType = ImageViewNode.imageTypes[self.ctrls['imageType'].currentIndex()]
+				self.view.mySetImage(data)
 
-				# dimensions
-				ndim =data.ndim 
-				if(ndim==2 or (ndim==3 and data.shape[2]==1) ):
-					print "display grayscaled"
-					self.view.mySetImage(data.copy())
-				elif(ndim==3):
-					print "display some multichannel"
-					# number of channels
-					nC = data.shape[2]
-					if displayType=='RgbType':
-						print "display RGB"
-						# check channels
-						if nC !=3 : 
-							raise RuntimeError("wrong number of channels for rgb image")
-						self.view.mySetImage(data.copy())
-					elif displayType=='LabType':
-						print "display LAB"
-						# check channels
-						if nC !=3 : 
-							raise RuntimeError("wrong number of channels for lab image")
-						self.view.mySetImage(vigra.colors.transform_Lab2RGB(data))
-					elif displayType=='MultiChannel':
-						print "display MultiChannel"
-						# check SELECTED channels
-						if channel >= nC :
-							raise RuntimeError("channel index is out of bounds")
-						self.view.mySetImage(data[:,:,channel].copy())
-					else:
-						assert False
-
-
-		#print "redraw labels?"
 		if self.view.imageItem.labelImage is not None:
 			self.view.imageItem.redrawLabels(updateImage=False)
 
-		return {'view': self.view,'labelImage':self.view.imageItemLabels.labelImage}
+		return {'labelImage':self.view.imageItemLabels.labelImage}
 
 
 ## register the class so it will appear in the menu of node types.
