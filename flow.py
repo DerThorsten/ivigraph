@@ -18,6 +18,7 @@ import vigra
 
 from views import * 
 from operators import * 
+from pyqtgraph.dockarea import *
 
 app = QtGui.QApplication([])
 
@@ -27,62 +28,44 @@ app = QtGui.QApplication([])
 
 
 
-class ImageFlowchar(Flowchart):
-    def __init__(self,*args,**kwargs):
-        print "my flow chart constructor"
-        super(ImageFlowchar, self).__init__(*args,**kwargs)
-        self.setCurrentFile=self._setCurrentFile
-
-
-    def _setCurrentFile(self, fileName):
-        fileName = str(fileName)
-        self.currentFileName = fileName
-        if fileName is None:
-            self.ui.fileNameLabel.setText("<b>[ new ]</b>")
-        else:
-            self.ui.fileNameLabel.setText("<b>%s</b>" % os.path.split(str(self.currentFileName))[1])
-        self.resizeEvent(None)
-
-    def _fileSaved(self, fileName):
-        print "jeah"
-        self.setCurrentFile(fileName)
-        self.ui.saveBtn.success("Saved.")
-
-## Create main window with a grid layout inside
+## Create main window with a grid layout inside\
+#app = QtGui.QApplication([])
 win = QtGui.QMainWindow()
 win.setWindowTitle('pyqtgraph example: FlowchartCustomNode')
-cw = QtGui.QWidget()
-win.setCentralWidget(cw)
-layout = QtGui.QGridLayout()
-cw.setLayout(layout)
+area = DockArea()
+win.setCentralWidget(area)
+win.resize(1000,500)
+win.setWindowTitle('pyqtgraph example: dockarea')
 
 ## Create an empty flowchart with a single input and output
-fc = ImageFlowchar(terminals={
+fc = Flowchart(terminals={
     'dataIn': {'io': 'in'},
     'dataOut': {'io': 'out'}    
 })
 w = fc.widget()
 
-layout.addWidget(fc.widget(), 0, 0, 0, 1)
-
-## Create two ImageView widgets to display the raw and processed data with contrast
-## and color control.
+#layout.addWidget(fc.widget(), 0, 0, 0, 1)
 
 
-# pyqtgraph.functions 
+d1  = Dock("Controll", size=(1, 1))
+
+viewDocks = [   Dock("view1", size=(1, 1)), Dock("view2", size=(1, 1)),
+                Dock("view3", size=(1, 1)), Dock("view4", size=(1, 1)) ]
+
+area.addDock(d1, 'left')
+area.addDock(viewDocks[0], 'right')
+area.addDock(viewDocks[1], 'below', viewDocks[0])
+area.addDock(viewDocks[2], 'below', viewDocks[0])
+area.addDock(viewDocks[3], 'below', viewDocks[0])
+
+viewers = [ ClickImageView(),ClickImageView(),
+            ClickImageView(),ClickImageView()]
 
 
-   
+d1.addWidget(fc.widget())
+for viewDock,viewer in zip(viewDocks,viewers):
+    viewDock.addWidget(viewer)
 
-
-v1 = ClickImageView()
-v2 = ClickImageView()
-v3 = ClickImageView()
-v4 = ClickImageView()
-layout.addWidget(v1, 0, 1)
-layout.addWidget(v2, 0, 2)
-layout.addWidget(v3, 1, 1)
-layout.addWidget(v4, 1, 2)
 
 win.show()
 
@@ -117,16 +100,17 @@ fc.setInput(dataIn=data)
 ## flowchart file.
 
 v1Node = fc.createNode('ImageView', pos=(0, -150))
-v1Node.setView(v1)
+v1Node.setView(viewers[0])
 
-v2Node = fc.createNode('ImageView', pos=(150, -150))
-v2Node.setView(v2)
+v2Node = fc.createNode('ImageView', pos=(0, -150))
+v2Node.setView(viewers[1])
 
-v3Node = fc.createNode('ImageView', pos=(300, -150))
-v3Node.setView(v3)
+v3Node = fc.createNode('ImageView', pos=(0, -150))
+v3Node.setView(viewers[2])
 
-v3Node = fc.createNode('ImageView', pos=(450, -150))
-v3Node.setView(v4)
+v4Node = fc.createNode('ImageView', pos=(0, -150))
+v4Node.setView(viewers[3])
+
 
 
 fNode = fc.createNode('GaussianGradientMagnitude', pos=(0, 0))
