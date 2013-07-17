@@ -1338,3 +1338,81 @@ fclib.registerNodeType(RandomForest, [('Image-MachineLearning',)])
 
 
 
+
+
+
+###################################################
+#
+#   numpy.where
+#
+###################################################
+class NumpyWhere(CtrlNode):
+    """ blend images (weighted), normalize, if neccessary """
+    nodeName = "numpy.where"
+
+    uiTemplate=[('ignore', 'spin', {'value' : 0, 'step' : 1, 'range': [0, None]})]
+
+    def __init__(self, name):
+        terminals = {
+            'Image': dict(io='in'),
+            'Indices': dict(io='out')
+        }
+        CtrlNode.__init__(self, name, terminals=terminals)
+    def process(self, Image, display=True):
+        ignore_value = self.ctrls['ignore'].value()
+        if ignore_value is not None:
+            return {'Indices': numpy.where(Image != ignore_value)}
+        else:
+            return {'Indices': None}
+fclib.registerNodeType(NumpyWhere, [('Misc',)])
+
+
+
+###################################################
+#
+#   FeatureStackToMatrix
+#
+###################################################
+class FeatureStackToMatrix(CtrlNode):
+    """ create feature matrix from labels and feature image """
+    nodeName = "FeatureStackToMatrix"
+
+    uiTemplate = [('no label', 'spin', {'value': 0, 'step' : 1, 'range' : [0, None]})]
+
+    def __init__(self, name):
+        terminals = {
+            'LabelImage': dict(io='in'),
+            'Features': dict(io='in'),
+            'FeatureMatrix': dict(io='out'),
+            'LabelVector': dict(io='out')
+        }
+        CtrlNode.__init__(self, name, terminals=terminals)
+    def process(self, LabelImage, Features, display=True):
+        if Features is None or \
+           LabelImage.shape[0] == 0 or \
+           np.all(LabelImage == 0):
+            return {'FeatureMatrix': None, 'LabelVector': None}
+        no_label_value = self.ctrls['no label'].value()
+
+        # only for 2D -> workaraound for 3D?
+        if len(Features.shape) == 2:
+            Features = Features[..., np.newaxis]
+        
+        if LabelImage is not None:
+            label_indices = numpy.where(LabelImage[...] != no_label_value)
+            label_vector = LabelImage[label_indices]
+            label_vector = label_vector[..., np.newaxis]
+        else:
+            label_indices = (slice(0, Features.shape[0]),
+                             slice(0, Features.shape[1]))
+            label_vector = None
+        number_of_samples = label_indices[0].shape[0]
+        number_of_features = Features.shape[2]
+        feature_matrix = numpy.empty((number_of_samples, number_of_features))
+        for index in xrange(Features.shape[-1]):
+            feature = Features[..., index]
+            feature_matrix[..., index] = feature[label_indices]
+        return {'FeatureMatrix': feature_matrix, 'LabelVector': label_vector}
+            
+        
+fclib.registerNodeType(FeatureStackToMatrix, [('Image-MachineLearning',)])
