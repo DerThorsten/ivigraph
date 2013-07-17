@@ -30,6 +30,7 @@ Known Bugs:
 Version
 =============
 
+- 0.0.5.2 - alpha  (proof of concept for machine learning with random forest)
 - 0.0.5.1 - alpha  (labeling uses multiple ImageItems in a layerd fashion)
 - 0.0.5.0 - alpha  (INITAL HACKY VERSION OF SAVE AND LOAD IS WORKING)
 - 0.0.4.1 - alpha  (added channel stacker with flexible number of input terminal)

@@ -367,16 +367,6 @@ class ClickImageView(pg.ImageView):
 				self.imageItemLabels.updateImage(self.labelPaintImage)
 		self.setImage(image)
 
-	def toBuffer(self,image):
-		if self.bufferImage is None :
-			#print "first copy"
-			self.bufferImage=image.copy()
-		elif image.ndim == self.bufferImage.ndim and tuple(image.shape) == tuple(self.bufferImage.shape):
-			#print "no alloc  copy"
-			self.bufferImage[:]=image[:]
-		else:
-			print "not matching => alloc  copy"
-			self.bufferImage=image.copy()
 
 
 
@@ -510,7 +500,7 @@ class ImageViewNode(CtrlNode):
 				data[:,:,c]/=data[:,:,c].max()
 				data[:,:,c]*=255.0
 
-		self.view.toBuffer(data)
+		#self.view.toBuffer(data)
 		displayType = ImageViewNode.imageTypes[self.ctrls['imageType'].currentIndex()]
 
 		

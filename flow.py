@@ -177,10 +177,19 @@ def loadFile(self, fileName=None, startDir=None,nodes=(v1Node,v2Node,v3Node,v4No
                 node.setView(viewers[2])
             if name =='ImageView.3':
                 node.setView(viewers[3])
+
+    self.inputNode.update()
+
+    """
     for name, node in self._nodes.items():
         print name
+        if isinstance(node,self.__class__):
+            print "bingo node...."
         node.update()
 
+    assert False
+    """
+    """
     for name, node in self._nodes.items():
 
         print name
@@ -190,7 +199,7 @@ def loadFile(self, fileName=None, startDir=None,nodes=(v1Node,v2Node,v3Node,v4No
             node.view.ui.histogram.update()
             node.view.ui.histogram.imageChanged()
             node.update()
-
+    """
     #for node,viewer in zip(nodes,viewers):
     #    node.setView(viewer)
 fc.loadFile=types.MethodType(loadFile,fc)

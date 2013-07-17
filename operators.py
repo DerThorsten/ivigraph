@@ -1279,11 +1279,51 @@ class RandomForest(CtrlNode):
         }
         CtrlNode.__init__(self, name, terminals=terminals)
     def process(self, Features, Labels, display=True):
+        numFeatures = Features.shape[2]
+
+        shape = Labels.shape
+        features = Features.astype(numpy.float32).reshape([-1,numFeatures])
+        labels   = Labels.astype(numpy.uint32).reshape(-1)
+
+
+        where1 = numpy.where(labels==1)
+        where2 = numpy.where(labels==2)
+
+        print where1
+        print where2
+
+        f1  = features[where1[0],:]
+        f2  = features[where2[0],:]
+        f= numpy.concatenate([f1,f2],axis=0).astype(numpy.float32)
+
+        print "f1 shape",f1.shape
+        print "f2 shape",f2.shape
+        print "f shape",f.shape
+
+        numLabeledPoints = f.shape[0]
+
+        print "numLabeledPoints",numLabeledPoints
+
+        l= numpy.zeros([f.shape[0],1],dtype=numpy.uint32)
+        l[0:len(where1[0])]=0
+        l[len(where1[0]):len(where1[0])+len(where2[0])]=1
+
+        print "learn rf"
+        print f.shape , l .shape 
+        rf=vigra.learning.RandomForest(treeCount=self.ctrls['numTrees'].value())
+        oob = rf.learnRF(f,l)
+        print "learn rf done",oob
+
+        print "predict"
+        probs = rf.predictProbabilities(features)
+        print "predict done"
+        probsImg = numpy.array(probs)
+        probsImg = probsImg.reshape(tuple(shape)+(2,))
 
         return {
             'RF': None,
             'PredictedLabels' : None,
-            'PredictedProbs'  : None,
+            'PredictedProbs'  : probsImg,
             'OOB-Error'       : None
         }
 
