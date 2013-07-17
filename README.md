@@ -30,6 +30,9 @@ Known Bugs:
 Version
 =============
 
+- 0.0.5.5   
+    - added numpy whereNotNode
+    - started to make it easy to implement a generalize numpy.where
 - 0.0.5.4   
     - added numpy require node
 - 0.0.5.3   
