@@ -1402,27 +1402,38 @@ fclib.registerNodeType(FeatureStackToMatrix, [('Image-MachineLearning',)])
 #   numpy
 #
 ###################################################
+
+_numpyDtypes= [
+    np.float32,
+    np.float64,
+    np.uint8,
+    np.uint16,
+    np.uint32,
+    np.uint64,
+    np.int8,
+    np.int16,
+    np.int32,
+    np.int64,
+    np.bool
+]
+
+_numpyDtypeStrs = [ str(d) for d in _numpyDtypes]
+
+
+_stringedBooleanOperators = {
+    '=='    : '__eq__' , 
+    '!='    : '__ne__' , 
+    '<'     : '__lt__' , 
+    '>'     : '__gt__' , 
+    '<='    : '__le__' , 
+    '>='    : '__ge__' 
+}
+
 class NumpyRequire(CtrlNode):
     """ blend images (weighted), normalize, if neccessary """
-    nodeName = "NumpyRequire"
-
-    dtypes= [
-        np.bool,
-        np.uint8,
-        np.uint16,
-        np.uint32,
-        np.uint64,
-        np.int8,
-        np.int16,
-        np.int32,
-        np.int64,
-        np.float32,
-        np.float64
-    ]
-
-    dtypeStrs = [ str(d) for d in dtypes]
+    nodeName = "numpy.require"
     uiTemplate = [
-        ('dtype', 'combo', {'values': dtypeStrs})
+        ('dtype', 'combo', {'values': _numpyDtypeStrs})
     ]
     def __init__(self, name):
         terminals = {
@@ -1433,22 +1444,20 @@ class NumpyRequire(CtrlNode):
     def process(self, dataIn, display=True):
 
         return { 'dataOut': 
-            np.require(dataIn,dtype=NumpyRequire.dtypes[  self.ctrls['dtype'].currentIndex()   ])
+            np.require(dataIn,dtype=_numpyDtypes[  self.ctrls['dtype'].currentIndex()   ])
         }
+
 fclib.registerNodeType(NumpyRequire, [('Numpy',)])
 
 
 
-###################################################
-#
-#   numpy.where
-#
-###################################################
-class NumpyWhere(CtrlNode):
-    """ blend images (weighted), normalize, if neccessary """
-    nodeName = "numpy.where"
 
-    uiTemplate=[('ignore', 'spin', {'value' : 0, 'step' : 1, 'range': [0, None]})]
+
+class NumpyWhereNot(CtrlNode):
+    """ blend images (weighted), normalize, if neccessary """
+    nodeName = "numpy.whereNot"
+
+    uiTemplate=[('isNotValue', 'spin', {'value' : 0, 'step' : 1, 'range': [0, None]})]
 
     def __init__(self, name):
         terminals = {
@@ -1462,4 +1471,4 @@ class NumpyWhere(CtrlNode):
             return {'Indices': np.where(Image != ignore_value)}
         else:
             return {'Indices': None}
-fclib.registerNodeType(NumpyWhere, [('Numpy',)])
+fclib.registerNodeType(NumpyWhereNot, [('Numpy',)])
