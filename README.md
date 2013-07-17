@@ -29,6 +29,7 @@ Known Bugs:
 Version
 =============
 
+- 0.0.4.1 - alpha  (added channel stacker with flexible number of input terminal)
 - 0.0.4.0 - alpha  (changed main layout to a "dockarea")
 - 0.0.3.5 - alpha  (improved and fixed clear labels)
 - 0.0.3.4 - alpha  (improved viewer gui)
