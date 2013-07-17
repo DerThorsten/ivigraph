@@ -30,34 +30,34 @@ Known Bugs:
 Version
 =============
 
-- 0.0.5.3 - alpha  
+- 0.0.5.3   
 	- readded  the functionality to switch between rgb,lab,and 1-channel 
 	- removed unused ui templates from  viewNodes
-- 0.0.5.2 - alpha  
+- 0.0.5.2   
 	- proof of concept for machine learning with random forest
-- 0.0.5.1 - alpha  
+- 0.0.5.1   
 	- labeling uses multiple ImageItems in a layerd fashion
-- 0.0.5.0 - alpha  
-INITAL HACKY VERSION OF SAVE AND LOAD IS WORKING
-- 0.0.4.1 - alpha  
+- 0.0.5.0   
+    - INITAL HACKY VERSION OF SAVE AND LOAD IS WORKING
+- 0.0.4.1   
     - added channel stacker with flexible number of input terminal
-- 0.0.4.0 - alpha  
+- 0.0.4.0   
     - changed main layout to a "dockarea"
-- 0.0.3.5 - alpha  
+- 0.0.3.5   
     - improved and fixed clear labels
-- 0.0.3.4 - alpha  
+- 0.0.3.4   
     - improved viewer gui
-- 0.0.3.3 - alpha  
+- 0.0.3.3   
     - extended imageview functions
-- 0.0.3.2 - alpha  
+- 0.0.3.2   
     - labeling is allmost finished for rgb color images
-- 0.0.3.1 - alpha  
+- 0.0.3.1   
     - fixed bug :brush size is now changeable
-- 0.0.3.0 - alpha  
+- 0.0.3.0   
     - proof of concept for labeling is done
-- 0.0.2.0 - alpha  
+- 0.0.2.0   
     - code works on differnt machines
-- 0.0.1.0 - alpha  
+- 0.0.1.0   
     - initial version
 
 
