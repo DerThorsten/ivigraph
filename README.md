@@ -30,6 +30,9 @@ Known Bugs:
 Version
 =============
 
+- 0.0.5.6
+    - added Random Forest classifier nodes (including auxiliary nodes)
+
 - 0.0.5.5   
     - added numpy whereNotNode
     - started to make it easy to implement a generalize numpy.where
