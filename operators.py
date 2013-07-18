@@ -1415,6 +1415,9 @@ class PredictionToImage(CtrlNode):
     """ reshape predictions to image """
     nodeName = "PredictionToImage"
 
+    uiTemplate=[
+        ('probability for class', 'intSpin', {'value': 1, 'min': 1, 'max': 1e9 })
+    ]
     def __init__(self, name):
         terminals = {
             'Predictions': dict(io='in'),
@@ -1423,7 +1426,12 @@ class PredictionToImage(CtrlNode):
         }
         CtrlNode.__init__(self, name, terminals=terminals)
     def process(self, Predictions, ImageForShape, display=True):
-        Image = Predictions.reshape(ImageForShape.shape)
+        if Predictions is None or ImageForShape is None:
+            return
+        print ImageForShape.shape
+        print Predictions.shape
+        classLabel = self.ctrls['probability for class'].value()
+        Image = Predictions[...,classLabel-1].reshape(ImageForShape.shape, order='F')
         return {'Image': Image}
 
 fclib.registerNodeType(PredictionToImage, [('Image-MachineLearning',)])
@@ -1455,7 +1463,6 @@ class FeatureStackToMatrix(CtrlNode):
         CtrlNode.__init__(self, name, terminals=terminals)
     def process(self, LabelImage, Features, display=True):
         if Features is None or \
-           LabelImage.shape[0] == 0 or \
            np.all(LabelImage == 0):
             return {'FeatureMatrix': None, 'LabelVector': None}
         no_label_value = self.ctrls['no label'].value()
@@ -1468,16 +1475,17 @@ class FeatureStackToMatrix(CtrlNode):
             label_indices = np.where(LabelImage[...] != no_label_value)
             label_vector = LabelImage[label_indices]
             label_vector = label_vector[..., np.newaxis]
+            number_of_samples = label_indices[0].shape[0]
         else:
             label_indices = (slice(0, Features.shape[0]),
                              slice(0, Features.shape[1]))
             label_vector = None
-        number_of_samples = label_indices[0].shape[0]
+            number_of_samples = Features.shape[0]*Features.shape[1]
         number_of_features = Features.shape[2]
         feature_matrix = np.empty((number_of_samples, number_of_features))
         for index in xrange(Features.shape[-1]):
-            feature = Features[..., index]
-            feature_matrix[..., index] = feature[label_indices]
+            feature = Features[...,index]
+            feature_matrix[..., index] = feature[label_indices].flatten()
         return {'FeatureMatrix': feature_matrix, 'LabelVector': label_vector}
             
         
