@@ -62,6 +62,9 @@ w = fc.widget()
 
 d1  = Dock("Controll", size=(1, 1))
 
+fd  = Dock("FlowchartDock", size=(1, 1))
+
+
 viewDocks = [   Dock("view0", size=(1, 1)), Dock("view1", size=(1, 1)),
                 Dock("view2", size=(1, 1)), Dock("view3", size=(1, 1)) ]
 
@@ -71,9 +74,12 @@ area.addDock(viewDocks[3], 'below', viewDocks[0])
 area.addDock(viewDocks[2], 'below', viewDocks[0])
 area.addDock(viewDocks[1], 'below', viewDocks[0])
 
+area.addDock(fd, 'below', viewDocks[0])
+
 viewers = [ ClickImageView(),ClickImageView(),
             ClickImageView(),ClickImageView()]
 
+fd.addWidget(w.chartWidget)
 
 d1.addWidget(fc.widget())
 for viewDock,viewer in zip(viewDocks,viewers):
