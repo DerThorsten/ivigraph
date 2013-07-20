@@ -844,6 +844,18 @@ node = vigraNode(
 )
 fclib.registerNodeType(node,[('Image-Analysis',)])
 
+
+node = vigraNode(
+    nodeName="RegionToEdges",
+    uiTemplate=[
+        ('edgeLabel', 'intSpin', {'value': 1, 'step': 1, 'range': [0, None]})
+    ],
+    f=vigra.analysis.regionImageToEdgeImage,
+    dtypeIn=np.uint32,
+    doChannelWise=False
+)
+fclib.registerNodeType(node,[('Image-Analysis',)])
+
         
 ###################################################
 #
