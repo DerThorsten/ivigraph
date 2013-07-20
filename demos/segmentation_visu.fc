@@ -1,0 +1,41 @@
+pos: (0.0, 0.0)
+connects: [('Input', 'dataIn', 'RGB2Lab.0', 'dataIn'), ('SlicSuperpixels.0', 'dataOut', 'Output', 'dataOut'), ('RGB2Lab.0', 'dataOut', 'SlicSuperpixels.0', 'dataIn'), ('Input', 'dataIn', 'ImageView.0', 'data'), ('SegVisu.0', 'dataOut', 'ImageView.1', 'data'), ('Input', 'dataIn', 'SegVisu.0', 'image'), ('SlicSuperpixels.0', 'dataOut', 'SegVisu.0', 'labelImage')]
+terminals:
+    dataOut:
+        multi: False
+        io: 'out'
+        renamable: False
+        multiable: False
+        removable: False
+        optional: False
+    dataIn:
+        multi: False
+        io: 'in'
+        renamable: False
+        multiable: False
+        removable: False
+        optional: False
+bypass: False
+inputNode:
+    terminals:
+        dataIn:
+            multi: False
+            io: 'out'
+            renamable: False
+            multiable: False
+            removable: False
+            optional: False
+    pos: (-237.28384644082405, -60.99353124780475)
+    bypass: False
+nodes: [{'state': {'pos': (150.0, -150.0), 'bypass': False, 'ctrl': {'_fake_param': 5}}, 'pos': (150.0, -150.0), 'class': 'ImageView', 'name': 'ImageView.1'}, {'state': {'pos': (0.0, -150.0), 'bypass': False, 'ctrl': {'_fake_param': 5}}, 'pos': (0.0, -150.0), 'class': 'ImageView', 'name': 'ImageView.0'}, {'state': {'pos': (450.0, -150.0), 'bypass': False, 'ctrl': {'_fake_param': 5}}, 'pos': (450.0, -150.0), 'class': 'ImageView', 'name': 'ImageView.3'}, {'state': {'pos': (300.0, -150.0), 'bypass': False, 'ctrl': {'_fake_param': 5}}, 'pos': (300.0, -150.0), 'class': 'ImageView', 'name': 'ImageView.2'}, {'state': {'pos': (-164.35502147950893, 135.53406899726446), 'bypass': False, 'ctrl': {}}, 'pos': (-164.35502147950893, 135.53406899726446), 'class': 'RGB2Lab', 'name': 'RGB2Lab.0'}, {'state': {'pos': (68.22706884605003, -10.760221478330976), 'bypass': False, 'ctrl': {'neighborhood': u'4'}}, 'pos': (68.22706884605003, -10.760221478330976), 'class': 'SegVisu', 'name': 'SegVisu.0'}, {'state': {'pos': (7.083048401286987, 158.1880809620743), 'bypass': False, 'ctrl': {'minSize': 10, 'intensityScaling': 5.0, 'seedDistance': 10, 'iterations': 10}}, 'pos': (7.083048401286987, 158.1880809620743), 'class': 'SlicSuperpixels', 'name': 'SlicSuperpixels.0'}]
+outputNode:
+    terminals:
+        dataOut:
+            multi: False
+            io: 'in'
+            renamable: False
+            multiable: False
+            removable: False
+            optional: False
+    pos: (300.0, 0.0)
+    bypass: False

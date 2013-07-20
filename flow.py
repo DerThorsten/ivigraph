@@ -301,7 +301,7 @@ def loadFile(self, fileName=None, startDir=None,nodes=(v1Node,v2Node,v3Node,v4No
     #    node.setView(viewer)
 fc.loadFile=types.MethodType(loadFile,fc)
 
-fNode = fc.createNode('GaussianGradientMagnitude', pos=(0, 0))
+fNode = fc.createNode('SlicSuperpixels', pos=(0, 0))
 fc.connectTerminals(fc['dataIn'], fNode['dataIn'])
 fc.connectTerminals(fc['dataIn'], v1Node['data'])
 #fc.connectTerminals(v1Node['view'], fNode['view'])

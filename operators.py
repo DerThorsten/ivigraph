@@ -834,8 +834,8 @@ fclib.registerNodeType(node,[('Image-Analysis',)])
 node = vigraNode(
     nodeName="SlicSuperpixels",
     uiTemplate=[
-        ('intensityScaling', 'spin', {'value': 1.0, 'step': 0.5, 'range': [0.0, None]}),
-        ('seedDistance', 'intSpin', {'value': 5, 'step': 1, 'range': [1, None]}),
+        ('intensityScaling', 'spin', {'value': 6.0, 'step': 0.5, 'range': [0.0, None]}),
+        ('seedDistance', 'intSpin', {'value': 15, 'step': 1, 'range': [1, None]}),
         ('minSize', 'intSpin', {'value': 0, 'step': 1, 'range': [0, None]}),
         ('iterations', 'intSpin', {'value': 10, 'step': 1, 'range': [1, None]})
     ],
@@ -1047,11 +1047,77 @@ fclib.registerNodeType(node,[('Image-Artistic',)])
 #   WATERSHED
 #
 ###################################################
+
+
+
+
+vigra.analysis.regionImageToCrackEdgeImage
+
+
+class SegVisu(CtrlNode):
+    """ visualization of a segmentaion"""
+    nodeName = "SegVisu"
+
+    uiTemplate=[
+        #('neighborhood', 'combo', {'values': ['4', '8'], 'index': 0})
+    ]
+
+    def __init__(self, name):
+        terminals = OrderedDict()
+        terminals['labelImage']=dict(io='in')
+        terminals['image']=dict(io='in')
+        terminals['dataOut']=dict(io='out')
+        # as well..
+        CtrlNode.__init__(self, name, terminals=terminals)
+
+
+    def process(self, labelImage,image=None, display=True):
+        #nh=4
+        #if self.ctrls['neighborhood'].currentIndex() == 1 :
+        #    nn=8
+
+        lImg = np.require(labelImage,dtype=np.uint32)
+
+        crackedEdgeImage = vigra.analysis.regionImageToCrackEdgeImage(lImg)
+
+        whereNoEdge = np.where(crackedEdgeImage!=0)
+        whereEdge   = np.where(crackedEdgeImage==0)
+        crackedEdgeImage[np.where(crackedEdgeImage!=0)]=1
+
+
+        if image  is not None :
+            if image.ndim==3 :
+                if tuple(image.shape[0:2]) == tuple(crackedEdgeImage.shape):
+                    imgOut=image.copy()
+                else:
+                    imgOut=vigra.sampling.resize(image,tuple(crackedEdgeImage.shape))
+
+                for c in range(imgOut.shape[2]):
+                    imgOut[whereEdge[0],whereEdge[1],c]=0.0
+
+            else :
+                if tuple(image.shape[0:2]) == tuple(crackedEdgeImage.shape):
+                    imgOut=image.copy()
+                else:
+                    imgOut=vigra.sampling.resize(image,tuple(crackedEdgeImage.shape))
+                imgOut[whereEdge[0],whereEdge[1]]=0.0
+
+            return {'dataOut': imgOut}
+        
+fclib.registerNodeType(SegVisu ,[('Image-Segmentation',)])
+
+
+
+
+
+
+
 class Watershed(CtrlNode):
     """ (seeded) watershed"""
     nodeName = "Watershed"
 
     uiTemplate=[('neighborhood', 'combo', {'values': ['4', '8'], 'index': 0})]
+
     def __init__(self, name):
         terminals = {
             'growImage': dict(io='in'),
