@@ -675,6 +675,11 @@ def _kammlinie(img,extrema):
     return res*2.0
 
 
+
+def _slicSuperpixelsImageOnly(image, **kwargs):
+    return vigra.analysis.slicSuperpixels(image, **kwargs)[0]
+
+
 node = vigraNode(
     nodeName="ExtremaLines",
     uiTemplate=[
@@ -825,6 +830,21 @@ node = vigraNode(
     doChannelWise=True
 )
 fclib.registerNodeType(node,[('Image-Analysis',)])
+
+node = vigraNode(
+    nodeName="SlicSuperpixels",
+    uiTemplate=[
+        ('intensityScaling', 'spin', {'value': 1.0, 'step': 0.5, 'range': [0.0, None]}),
+        ('seedDistance', 'intSpin', {'value': 5, 'step': 1, 'range': [1, None]}),
+        ('minSize', 'intSpin', {'value': 0, 'step': 1, 'range': [0, None]}),
+        ('iterations', 'intSpin', {'value': 10, 'step': 1, 'range': [1, None]})
+    ],
+    f=_slicSuperpixelsImageOnly,
+    doChannelWise=False
+)
+fclib.registerNodeType(node,[('Image-Analysis',)])
+
+        
 ###################################################
 #
 #   Sampling
