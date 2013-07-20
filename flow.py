@@ -62,6 +62,13 @@ w = fc.widget()
 
 d1  = Dock("Controll", size=(1, 1))
 
+dImageSelector  = Dock("ImageSelector", size=(1, 1))
+
+
+
+
+
+
 fd  = Dock("FlowchartDock", size=(1, 1))
 
 
@@ -73,8 +80,92 @@ area.addDock(viewDocks[0], 'right')
 area.addDock(viewDocks[3], 'below', viewDocks[0])
 area.addDock(viewDocks[2], 'below', viewDocks[0])
 area.addDock(viewDocks[1], 'below', viewDocks[0])
-
 area.addDock(fd, 'below', viewDocks[0])
+area.addDock(dImageSelector,'bottom',d1)
+
+
+#ilayout = pg.LayoutWidget()
+class ImageSelector(QtGui.QWidget):
+
+  #__pyqtSignals__ = ("latitudeChanged(double)",
+ #                    "longitudeChanged(double)")
+
+    def __init__(self, parent = None):
+
+        QtGui.QWidget.__init__(self, parent)
+
+        # current image
+        self.image     = None
+        self.imageDesc = 'None'
+
+
+        # current image selector
+        self.currentImageTextLabel = QtGui.QLabel("CurrentImg:")
+        self.currentImageDescLabel = QtGui.QLabel(str(self.currentImgDesc()))
+
+        self.comboBoxFilter = QtGui.QComboBox()
+        imgItem = [str(i) for i in xrange(100)]
+        self.comboBoxFilter.addItems(imgItem)
+
+        # prev & next image
+        self.prevImgButton = QtGui.QPushButton('<')
+        self.nextImgButton = QtGui.QPushButton('>')
+        self.prevImgButton.setFixedSize(20,30)
+        self.nextImgButton.setFixedSize(20,30)
+
+        #
+        self.folderSelectorTextLabel = QtGui.QLabel("Folder :")
+        self.folderSelector = QtGui.QLineEdit('\\home')
+        #self.folderFilterrTextLabel = QtGui.QLabel("Filter :")
+        self.folderSelectorFilter = QtGui.QLineEdit('*.png')
+        self.loadFolderButton   =QtGui.QPushButton('Load')
+
+
+        layout = QtGui.QVBoxLayout(self)
+        layoutA = QtGui.QHBoxLayout()
+        layoutB = QtGui.QHBoxLayout()
+
+
+        layout.addLayout(layoutA)
+        layout.addLayout(layoutB)
+
+        layoutA.addWidget(self.folderSelectorTextLabel)
+        layoutA.addWidget(self.folderSelector)
+        #layoutA.addWidget(self.folderFilterrTextLabel)
+        layoutA.addWidget(self.folderSelectorFilter)
+        layoutA.addWidget(self.loadFolderButton)
+
+        layoutB.addWidget(self.currentImageTextLabel)
+        layoutB.addWidget(self.currentImageDescLabel)
+        layoutB.addWidget(self.prevImgButton)
+        layoutB.addWidget(self.nextImgButton)
+        layoutB.addWidget(self.comboBoxFilter)
+
+        # on image changed callback
+        self.onImageChangedCallBack = None
+
+    def currentImgDesc(self):
+        return self.imageDesc
+
+    def connectImageChange(self,f):
+        self.onImageChangedCallBack = f
+
+    def onImageChanged(self):
+        if self.onImageChangedCallBack is None:
+            print "onImageChangedCallBack is none"
+        else :
+            print "onImageChangedCallBack is called"
+            f(self.image,self.iamgeDesc)
+
+imgSelector =  ImageSelector(parent=area)
+
+comboBoxFilter = QtGui.QComboBox()
+comboBoxFilter.addItems(['*.*','*.jpg/jpeg','*.png'])
+#dImageSelector.addWidget(comboBoxFilter)
+dImageSelector.addWidget(imgSelector)
+
+
+
 
 viewers = [ ClickImageView(),ClickImageView(),
             ClickImageView(),ClickImageView()]

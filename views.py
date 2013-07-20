@@ -112,15 +112,12 @@ class ClickImageView(pg.ImageView):
 
 		self.srcImage = None
 		self.currentNumberOfChannels= 0
-		self.setupMyUi()
 
-		
-		
+
 		self.imageItemLabels = ImageAndLabelItem()
 		self.view.addItem(self.imageItemLabels)
 		self.imageItemLabels.clickImageView=self
-		self.labelImage      = None
-		self.labelPaintImage = None
+		self.imageItem.clickImageView=self
 
 
 		self.currentLabel=1
@@ -128,12 +125,28 @@ class ClickImageView(pg.ImageView):
 		self.imageItemLabels.numLabels=10
 		self.numLabels=10
 
+		self.labelImage      = None
+		self.labelPaintImage = None
+		self.labelColors =numpy.ones([self.numLabels,4])*0.5
+
+
+
+		self.setupMyUi()
+
+		
+		
+
+
+
+
+
+
 	   
-		self.imageItem.clickImageView=self
+
 
 		self.brushSize = 3
 
-		self.labelColors =numpy.ones([self.numLabels,4])*0.5
+		
 		self.labelColors[0,:]=0,0,0,0.5
 		self.labelColors[1,:]=1,0,0,0.5
 		self.labelColors[2,:]=0,1,0,0.5
@@ -151,6 +164,8 @@ class ClickImageView(pg.ImageView):
 		self.labelColors*=255.0
 		self.bufferImage = None
 
+
+		self.alpha = 0.0
 
 		#randImg=numpy.random.rand(100,200,4)*255
 		#self.imageItem2.updateImage(randImg)
@@ -241,8 +256,10 @@ class ClickImageView(pg.ImageView):
 		# label box 
 		# Options for label Mode :
 		self.labelBox = QtGui.QHBoxLayout()
+		self.alphaBox = QtGui.QHBoxLayout()
 		#self.belowImgBox.addStretch(1)
 		self.belowImgBox.addLayout(self.labelBox)
+		self.belowImgBox.addLayout(self.alphaBox)
 
 		self.checkboxLabelMode  = QtGui.QCheckBox('LabelMode',self)
 
@@ -270,6 +287,20 @@ class ClickImageView(pg.ImageView):
 		self.buttonUpdateLabels = QtGui.QPushButton('Propergate', self)
 		self.buttonClearLabels  = QtGui.QPushButton('ClearLabels', self)
 
+
+
+
+		self.labelAlphaDesc=QtGui.QLabel("LabelAlpha:")
+		self.sliderAlpha = QtGui.QSlider(QtCore.Qt.Horizontal, self)
+		self.sliderAlpha.setGeometry(10, 10, 200, 30)
+		self.sliderAlpha.setMinimum(0)
+		self.sliderAlpha.setMaximum(100)
+		self.sliderAlpha.setTickInterval(1)
+		self.sliderAlpha.setSingleStep(1)
+		self.sliderAlpha.setValue(50)
+		self.labelAlpha=QtGui.QLabel(str(self.sliderAlpha.sliderPosition()/100.0))
+
+
 		self.labelBox.addWidget(self.checkboxLabelMode)
 		
 		self.labelBox.addWidget(self.labelSliderChannelDesc)
@@ -281,6 +312,9 @@ class ClickImageView(pg.ImageView):
 		self.labelBox.addWidget(self.buttonUpdateLabels)
 		self.labelBox.addWidget(self.buttonClearLabels)
 		
+		self.alphaBox.addWidget(self.labelAlphaDesc)
+		self.alphaBox.addWidget(self.sliderAlpha)
+		self.alphaBox.addWidget(self.labelAlpha)
 
 		# connections:
 		#
@@ -358,6 +392,25 @@ class ClickImageView(pg.ImageView):
 
 		checkboxLabelModeValueChanged(False)
 		self.checkboxLabelMode.stateChanged.connect(checkboxLabelModeValueChanged) 
+
+		# - alpha changed
+		def sliderAlphaValueChanged(value):
+			self.alpha =  value/100.0
+			self.labelAlpha.setText(str(value/100.0))
+			
+			print "alpha",self.alpha
+
+			if self.labelPaintImage is not None:
+
+				whereNoLabels = numpy.where(self.imageItemLabels.labelImage == 0 )
+				print whereNoLabels
+				self.labelPaintImage[:,:,3]=self.alpha*255.0
+				self.labelPaintImage[whereNoLabels[0],whereNoLabels[1],3]=0.0
+				self.imageItemLabels.updateImage()
+				self.labelColors[:,3]=self.alpha*255.0
+
+		self.sliderAlpha.valueChanged.connect(sliderAlphaValueChanged) 
+		sliderAlphaValueChanged(50)
 
 
 	def mySetImage(self,image):
