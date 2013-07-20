@@ -17,6 +17,8 @@ Cick on Flowchart-Button in the GUI and edit the graph
 Dependencies:
 =============
 - vigranumpy   http://hci.iwr.uni-heidelberg.de/vigra/  Python and Boost Python Wrapped C++ Code
+    - one currently needs a very new version if vigra .
+    - Use the newest version from https://github.com/ukoethe/vigra master
 - pyqtgraph   http://www.pyqtgraph.org/   pure Python
 
 Known Bugs:
