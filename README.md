@@ -32,6 +32,10 @@ Known Bugs:
 Version
 =============
 
+- 0.0.5.9
+    - added superpixel visualization
+    - added a "demo" folder to repo where nice example flowcharts can be stored
+
 - 0.0.5.8
     - removed unused buttons: (flowchart,reloadLibs,Norm)
     - added experimental gui for image selection (only GUI, not functionality so far)
