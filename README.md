@@ -31,7 +31,7 @@ Version
 =============
 
 - 0.0.5.7
-    - added slicSuperpixels
+    - added slicSuperpixels (and RegionToEdges for visualization)
 
 - 0.0.5.6
     - added Random Forest classifier nodes (including auxiliary nodes)
