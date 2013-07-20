@@ -49,8 +49,8 @@ fc = Flowchart(terminals={
 })
 w = fc.widget()
 
-
-
+w.ui.showChartBtn.hide()
+w.ui.reloadBtn.hide()
 
 
 

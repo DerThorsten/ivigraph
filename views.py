@@ -15,6 +15,9 @@ import functools
 
 from nodegraphics import CustomNodeGraphicsItem
 
+
+
+
 class ImageAndLabelItem(pg.ImageItem):
 	def __init__(self,*args,**kwargs):
 		super(ImageAndLabelItem, self).__init__(*args,**kwargs)
@@ -108,8 +111,10 @@ class ClickImageView(pg.ImageView):
 
 
 	def __init__(self,*args,**kwargs):
-		super(ClickImageView, self).__init__(imageItem=ImageAndLabelItem())
-
+		super(ClickImageView, self).__init__()#imageItem=ImageAndLabelItem())
+	
+		#self.ui.roiBtn.hide()
+		self.ui.normBtn.hide()
 		self.srcImage = None
 		self.currentNumberOfChannels= 0
 
@@ -582,8 +587,8 @@ class ImageViewNode(CtrlNode):
 			else:
 				self.view.mySetImage(data)
 
-		if self.view.imageItem.labelImage is not None:
-			self.view.imageItem.redrawLabels(updateImage=False)
+		#if self.view.imageItemLabels.labelImage is not None:
+		#	self.view.imageItem.redrawLabels(updateImage=False)
 
 		return {'labelImage':self.view.imageItemLabels.labelImage}
 

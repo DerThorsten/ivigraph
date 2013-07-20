@@ -30,6 +30,12 @@ Known Bugs:
 Version
 =============
 
+- 0.0.5.8
+    - removed unused buttons: (flowchart,reloadLibs,Norm)
+    - added experimental gui for image selection (only GUI, not functionality so far)
+    - refactored Viewer a bit
+    - added label alpha slider 
+
 - 0.0.5.7
     - added slicSuperpixels (and RegionToEdges for visualization)
 
