@@ -37,6 +37,13 @@ Known Bugs:
 - sometimes one gets floating point error when deleting edges no idea what is going on
     - (can someone reproduce this error?)
 
+
+Authors
+=============
+- Thorsten Beier
+- Philipp Hanslovsky
+
+
 Version
 =============
 
@@ -87,12 +94,12 @@ Version
 - 0.0.5.4   
     - added numpy require node
 - 0.0.5.3   
-	- readded  the functionality to switch between rgb,lab,and 1-channel 
-	- removed unused ui templates from  viewNodes
+    - readded  the functionality to switch between rgb,lab,and 1-channel 
+    - removed unused ui templates from  viewNodes
 - 0.0.5.2   
-	- proof of concept for machine learning with random forest
+    - proof of concept for machine learning with random forest
 - 0.0.5.1   
-	- labeling uses multiple ImageItems in a layerd fashion
+    - labeling uses multiple ImageItems in a layerd fashion
 - 0.0.5.0   
     - INITAL HACKY VERSION OF SAVE AND LOAD IS WORKING
 - 0.0.4.1   
@@ -116,9 +123,3 @@ Version
 - 0.0.1.0   
     - initial version
 
-
-
-Authors
-=============
-- 1 Thorsten Beier
-- 2 Philipp Hanslovsky
