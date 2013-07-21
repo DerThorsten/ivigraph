@@ -16,6 +16,7 @@ from nodegraphics import CustomNodeGraphicsItem
 from termcolor import colored
 import time
 
+
 def convertNh(nh):
     if nh == 0 : neighborhood = 4
     else: neighborhood =  8

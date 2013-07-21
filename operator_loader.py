@@ -30,7 +30,10 @@ import operators.vigra_analysis
 import operators.vigra_sampling
 import operators.vigra_machine_learning
 
+import operators.vigra_segmentation #TODO
 
+
+import operators.numpy_op           #TODO
 import operators.channels
 import operators.normalize
 
