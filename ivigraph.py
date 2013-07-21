@@ -24,17 +24,15 @@ class ImageSelector(QtGui.QWidget):
         QtGui.QWidget.__init__(self, parent)
 
         # current image
-        self.image     = None
         self.imageDesc = 'None'
+        self.currentIndex = 0
+        self.numInput   = None
+        self.batchInputNames = None
+        self.ivigraph=None
 
-
-        # current image selector
-        self.currentImageTextLabel = QtGui.QLabel("CurrentImg:")
-        self.currentImageDescLabel = QtGui.QLabel(str(self.currentImgDesc()))
-
-        self.comboBoxFilter = QtGui.QComboBox()
-        imgItem = [str(i) for i in xrange(100)]
-        self.comboBoxFilter.addItems(imgItem)
+        self.comboBoxInputSelector = QtGui.QComboBox()
+        #imgItem = [str(i) for i in xrange(100)]
+        #self.comboBoxInputSelector.addItems(imgItem)
 
         # prev & next image
         self.prevImgButton = QtGui.QPushButton('<')
@@ -42,58 +40,57 @@ class ImageSelector(QtGui.QWidget):
         self.prevImgButton.setFixedSize(20,30)
         self.nextImgButton.setFixedSize(20,30)
 
-        #
-        self.folderSelectorTextLabel = QtGui.QLabel("Folder :")
-        self.folderSelector = QtGui.QLineEdit('\\home')
-        #self.folderFilterrTextLabel = QtGui.QLabel("Filter :")
-        self.folderSelectorFilter = QtGui.QLineEdit('*.png')
-        self.loadFolderButton   =QtGui.QPushButton('Load')
 
 
         layout = QtGui.QVBoxLayout(self)
-        layoutA = QtGui.QHBoxLayout()
         layoutB = QtGui.QHBoxLayout()
 
 
-        layout.addLayout(layoutA)
+
         layout.addLayout(layoutB)
 
-        layoutA.addWidget(self.folderSelectorTextLabel)
-        layoutA.addWidget(self.folderSelector)
-        #layoutA.addWidget(self.folderFilterrTextLabel)
-        layoutA.addWidget(self.folderSelectorFilter)
-        layoutA.addWidget(self.loadFolderButton)
-
-        layoutB.addWidget(self.currentImageTextLabel)
-        layoutB.addWidget(self.currentImageDescLabel)
+        layoutB.addWidget(self.comboBoxInputSelector)
         layoutB.addWidget(self.prevImgButton)
         layoutB.addWidget(self.nextImgButton)
-        layoutB.addWidget(self.comboBoxFilter)
-
-        # on image changed callback
-        self.onImageChangedCallBack = None
-
-    def currentImgDesc(self):
-        return self.imageDesc
-
-    def connectImageChange(self,f):
-        self.onImageChangedCallBack = f
-
-    def onImageChanged(self):
-        if self.onImageChangedCallBack is None:
-            print "onImageChangedCallBack is none"
-        else :
-            print "onImageChangedCallBack is called"
-            f(self.image,self.iamgeDesc)
 
 
 
 
+
+        def buttonNextImg():
+            if self.currentIndex+1 < self.numInput:
+                self.setCurrentIndex(self.currentIndex+1)
+        self.nextImgButton.released.connect(buttonNextImg)
+
+        def buttonPrevImg():
+            if self.currentIndex>0 :
+                self.setCurrentIndex(self.currentIndex-1)
+        self.prevImgButton.released.connect(buttonPrevImg)
+
+
+    def setCurrentIndex(self,newIndex):
+
+        self.nextImgButton.setEnabled(newIndex+1<self.numInput)
+        self.prevImgButton.setEnabled(newIndex>0)
+        self.currentIndex=newIndex
+        self.comboBoxInputSelector.setCurrentIndex(newIndex)
+        self.ivigraph._updateInput(self.currentIndex)
+
+    def setBatchInputNames(self,ivigraph,batchInputNames):
+        self.ivigraph = ivigraph
+        self.numInput   = len(batchInputNames)
+        self.batchInputNames = batchInputNames
+        self.comboBoxInputSelector.clear()
+        self.comboBoxInputSelector.addItems(self.batchInputNames)
 
 
 
 class IViGrahp(QtGui.QWidget):
     def __init__(self,parent=None,dataIn=None):
+
+        self.batchInput=None
+        self.batchMode=None
+
         QtGui.QWidget.__init__(self, parent)
 
         self.win = QtGui.QMainWindow()
@@ -138,7 +135,7 @@ class IViGrahp(QtGui.QWidget):
         })
 
         # image selctor widget
-        self.imgSelector =  ImageSelector(parent=self.dockArea)
+        self.imgSelector =  ImageSelector(parent=self)
         self.imageSelectorDock.addWidget(self.imgSelector)
 
         self.flowCharWidget = self.flowChart.widget()
@@ -215,4 +212,23 @@ class IViGrahp(QtGui.QWidget):
 
     def setInput(self,**kwargs):
         self.flowChart.setInput(**kwargs)
+        self.batchMode = False
+        self.imageSelectorDock.hide()
+
+    def setBatchInput(self,folder,fFilter,inputName='imageIn'):
+
+        self.batchInput      = [ folder + f for f in os.listdir(folder) if f.endswith(fFilter)]
+        self.batchInputNames = [ f for f in os.listdir(folder) if f.endswith(fFilter)]
+
+        for fn in self.batchInput:
+            print fn
+
+        self.batchMode = True
+        self.imgSelector.setBatchInputNames(self,self.batchInputNames)
+        self.imgSelector.setCurrentIndex(0)
+        self.imageSelectorDock.show()
+
+    def _updateInput(self,index):
+        data = vigra.readImage(self.batchInput[index])
+        self.flowChart.setInput(dataIn=data)
 
