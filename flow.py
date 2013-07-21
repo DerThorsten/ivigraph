@@ -43,15 +43,6 @@ win.setWindowTitle('pyqtgraph example: dockarea')
 
 
 ## Create an empty flowchart with a single input and output
-fc = Flowchart(terminals={
-    'dataIn': {'io': 'in'},
-    'dataOut': {'io': 'out'}    
-})
-w = fc.widget()
-
-w.ui.showChartBtn.hide()
-w.ui.reloadBtn.hide()
-
 
 
 
