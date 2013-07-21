@@ -4,7 +4,6 @@ from pyqtgraph.flowchart.library.common import CtrlNode
 from pyqtgraph.Qt import QtGui, QtCore
 import pyqtgraph as pg
 import numpy as np
-import numpy
 import scipy.ndimage
 import vigra
 import os
@@ -12,6 +11,8 @@ from views import *
 from operators import * 
 from pyqtgraph.dockarea import *
 import types
+
+import __version__
 
 class ImageSelector(QtGui.QWidget):
 
@@ -96,7 +97,7 @@ class IViGrahp(QtGui.QWidget):
         QtGui.QWidget.__init__(self, parent)
 
         self.win = QtGui.QMainWindow()
-
+        self.win.setWindowTitle("IViGrahp V%s"%__version__.version)
         self.win.setCentralWidget(self)
         self.win.resize(1000,500)
 
