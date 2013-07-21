@@ -33,6 +33,9 @@ Known Bugs:
 Version
 =============
 
+- 0.0.6.2
+    - added a few demos
+
 - 0.0.6.1
     - implemented a "batch-mode" to have a folder 
      with images as input .
