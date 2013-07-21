@@ -47,6 +47,11 @@ Authors
 Version
 =============
 
+- 0.0.6.6
+    - refactored node base classes 
+    - split operators into seperated files
+    - removed some unused imports
+
 - 0.0.6.5
     - fixed minor bug in vigra_machine_learning.py
 
