@@ -32,7 +32,10 @@ import operators.vigra_machine_learning
 from operators.normalize import _normalize
 from operators.node_base import MyCtrlNode
 
+import operators.vigra_segmentation #TODO
 
+
+import operators.numpy_op           #TODO
 import operators.channels
 import operators.normalize
 
