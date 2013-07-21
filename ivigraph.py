@@ -8,7 +8,7 @@ import scipy.ndimage
 import vigra
 import os
 from views import * 
-from operators import * 
+from operator_loader import * 
 from pyqtgraph.dockarea import *
 import types
 

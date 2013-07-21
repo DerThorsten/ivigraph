@@ -13,7 +13,6 @@ import collections
 
 import functools
 
-import time
 
 from nodegraphics import CustomNodeGraphicsItem
 
