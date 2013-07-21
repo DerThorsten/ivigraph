@@ -32,6 +32,9 @@ Known Bugs:
 Version
 =============
 
+- 0.0.6.0
+    - implemented a central widget ivigraph
+
 - 0.0.5.9
     - added superpixel visualization
     - added a "demo" folder to repo where nice example flowcharts can be stored
