@@ -1,0 +1,41 @@
+pos: (0.0, 0.0)
+connects: [('GaussianGradientMagnitude.0', 'dataOut', 'ImageView.3', 'data'), ('NonLinearDiffusion.0', 'dataOut', 'ImageView.1', 'data'), ('NonLinearDiffusion.0', 'dataOut', 'GaussianGradientMagnitude.0', 'dataIn'), ('Input', 'dataIn', 'ImageView.0', 'data'), ('Input', 'dataIn', 'NonLinearDiffusion.0', 'dataIn'), ('Input', 'dataIn', 'GaussianGradientMagnitude.1', 'dataIn'), ('GaussianGradientMagnitude.1', 'dataOut', 'ImageView.2', 'data')]
+terminals:
+    dataOut:
+        multi: False
+        io: 'out'
+        renamable: False
+        multiable: False
+        removable: False
+        optional: False
+    dataIn:
+        multi: False
+        io: 'in'
+        renamable: False
+        multiable: False
+        removable: False
+        optional: False
+bypass: False
+inputNode:
+    terminals:
+        dataIn:
+            multi: False
+            io: 'out'
+            renamable: False
+            multiable: False
+            removable: False
+            optional: False
+    pos: (-150.0, 0.0)
+    bypass: False
+nodes: [{'state': {'pos': (150.0, -150.0), 'bypass': False, 'ctrl': {'_fake_param': 5}}, 'pos': (150.0, -150.0), 'class': 'ImageView', 'name': 'ImageView.1'}, {'state': {'pos': (0.0, -150.0), 'bypass': False, 'ctrl': {'_fake_param': 5}}, 'pos': (0.0, -150.0), 'class': 'ImageView', 'name': 'ImageView.0'}, {'state': {'pos': (475.1428865654426, 167.8779230059517), 'bypass': False, 'ctrl': {'_fake_param': 5}}, 'pos': (475.1428865654426, 167.8779230059517), 'class': 'ImageView', 'name': 'ImageView.3'}, {'state': {'pos': (300.0, -150.0), 'bypass': False, 'ctrl': {'_fake_param': 5}}, 'pos': (300.0, -150.0), 'class': 'ImageView', 'name': 'ImageView.2'}, {'state': {'pos': (11.114144035982974, 23.92433095309154), 'bypass': False, 'ctrl': {'scale': 1.5, 'edgeThreshold': 0.25}}, 'pos': (11.114144035982974, 23.92433095309154), 'class': 'NonLinearDiffusion', 'name': 'NonLinearDiffusion.0'}, {'state': {'pos': (287.0987021123679, 243.52735095736386), 'bypass': False, 'ctrl': {'sigma': 1.0}}, 'pos': (287.0987021123679, 243.52735095736386), 'class': 'GaussianGradientMagnitude', 'name': 'GaussianGradientMagnitude.0'}, {'state': {'pos': (3.597296771932008, 292.02101239717524), 'bypass': False, 'ctrl': {'sigma': 1.0}}, 'pos': (3.597296771932008, 292.02101239717524), 'class': 'GaussianGradientMagnitude', 'name': 'GaussianGradientMagnitude.1'}]
+outputNode:
+    terminals:
+        dataOut:
+            multi: False
+            io: 'in'
+            renamable: False
+            multiable: False
+            removable: False
+            optional: False
+    pos: (300.0, 0.0)
+    bypass: False

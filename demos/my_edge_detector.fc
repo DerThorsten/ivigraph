@@ -1,0 +1,41 @@
+pos: (0.0, 0.0)
+connects: [('NonLinearDiffusion.0', 'dataOut', 'GaussianGradientMagnitude.0', 'dataIn'), ('Input', 'dataIn', 'RGB2Lab.0', 'dataIn'), ('NonLinearDiffusion.0', 'dataOut', 'ImageView.1', 'data'), ('RGB2Lab.0', 'dataOut', 'ImageView.0', 'data'), ('DiscMedian.0', 'dataOut', 'RGB2Lab.1', 'dataIn'), ('RGB2Lab.1', 'dataOut', 'NonLinearDiffusion.0', 'dataIn'), ('RGB2Lab.0', 'dataOut', 'GaussianGradientMagnitude.1', 'dataIn'), ('Input', 'dataIn', 'DiscMedian.0', 'dataIn'), ('GaussianGradientMagnitude.0', 'dataOut', 'ImageView.3', 'data'), ('GaussianGradientMagnitude.1', 'dataOut', 'ImageView.2', 'data')]
+terminals:
+    dataOut:
+        multi: False
+        io: 'out'
+        renamable: False
+        multiable: False
+        removable: False
+        optional: False
+    dataIn:
+        multi: False
+        io: 'in'
+        renamable: False
+        multiable: False
+        removable: False
+        optional: False
+bypass: False
+inputNode:
+    terminals:
+        dataIn:
+            multi: False
+            io: 'out'
+            renamable: False
+            multiable: False
+            removable: False
+            optional: False
+    pos: (-394.0880195389774, -39.97993423483243)
+    bypass: False
+nodes: [{'state': {'pos': (150.0, -150.0), 'bypass': False, 'ctrl': {'_fake_param': 5}}, 'pos': (150.0, -150.0), 'class': 'ImageView', 'name': 'ImageView.1'}, {'state': {'pos': (0.0, -150.0), 'bypass': False, 'ctrl': {'_fake_param': 5}}, 'pos': (0.0, -150.0), 'class': 'ImageView', 'name': 'ImageView.0'}, {'state': {'pos': (475.1428865654426, 167.8779230059517), 'bypass': False, 'ctrl': {'_fake_param': 5}}, 'pos': (475.1428865654426, 167.8779230059517), 'class': 'ImageView', 'name': 'ImageView.3'}, {'state': {'pos': (300.0, -150.0), 'bypass': False, 'ctrl': {'_fake_param': 5}}, 'pos': (300.0, -150.0), 'class': 'ImageView', 'name': 'ImageView.2'}, {'state': {'pos': (11.114144035982974, 23.92433095309154), 'bypass': False, 'ctrl': {'scale': 5.0, 'edgeThreshold': 0.75}}, 'pos': (11.114144035982974, 23.92433095309154), 'class': 'NonLinearDiffusion', 'name': 'NonLinearDiffusion.0'}, {'state': {'pos': (-260.3285673478796, -148.62064837618533), 'bypass': False, 'ctrl': {'radius': 3}}, 'pos': (-260.3285673478796, -148.62064837618533), 'class': 'DiscMedian', 'name': 'DiscMedian.0'}, {'state': {'pos': (-136.18035051339982, 28.132745083073814), 'bypass': False, 'ctrl': {}}, 'pos': (-136.18035051339982, 28.132745083073814), 'class': 'RGB2Lab', 'name': 'RGB2Lab.1'}, {'state': {'pos': (-344.4968499475271, 137.55151246261522), 'bypass': False, 'ctrl': {}}, 'pos': (-344.4968499475271, 137.55151246261522), 'class': 'RGB2Lab', 'name': 'RGB2Lab.0'}, {'state': {'pos': (287.0987021123679, 243.52735095736386), 'bypass': False, 'ctrl': {'sigma': 1.6}}, 'pos': (287.0987021123679, 243.52735095736386), 'class': 'GaussianGradientMagnitude', 'name': 'GaussianGradientMagnitude.0'}, {'state': {'pos': (-70.04995050275932, 304.6462547871223), 'bypass': False, 'ctrl': {'sigma': 1.6}}, 'pos': (-70.04995050275932, 304.6462547871223), 'class': 'GaussianGradientMagnitude', 'name': 'GaussianGradientMagnitude.1'}]
+outputNode:
+    terminals:
+        dataOut:
+            multi: False
+            io: 'in'
+            renamable: False
+            multiable: False
+            removable: False
+            optional: False
+    pos: (300.0, 0.0)
+    bypass: False

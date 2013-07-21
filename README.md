@@ -33,6 +33,11 @@ Known Bugs:
 Version
 =============
 
+- 0.0.6.1
+    - implemented a "batch-mode" to have a folder 
+     with images as input .
+    - image selection gui is enabled if input mode is batch mode
+
 - 0.0.6.0
     - implemented a central widget ivigraph
 
