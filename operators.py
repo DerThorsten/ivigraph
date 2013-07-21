@@ -13,10 +13,37 @@ from scipy.stats.mstats import mquantiles
 from collections import OrderedDict
 from nodegraphics import CustomNodeGraphicsItem
 
+from termcolor import colored
+import time
+
+
 def convertNh(nh):
     if nh == 0 : neighborhood = 4
     else: neighborhood =  8
     return neighborhood
+
+
+
+
+class SimpleCtrlNode(CtrlNode):
+    def __init__(self,name,terminals,myNodeSize=(100,100)):
+        self.myNodeSize=myNodeSize
+        CtrlNode.__init__(self, name, terminals=terminals)   
+        print "nodeSize",self.myNodeSize
+        self.t0 = None
+
+    def startProcess(self):
+        print colored('\nStart', 'blue'), colored(self.name(), 'green')
+        self.t0 = time.time()
+    def endProcess(self):
+        t1 = time.time()
+        t = t1-self.t0
+        print colored('Done ', 'blue'),colored("%f sek"%float(t),'green')
+
+    def graphicsItem(self):
+        if self._graphicsItem is None:
+            self._graphicsItem = CustomNodeGraphicsItem(self,self.myNodeSize)
+        return self._graphicsItem
 
 
 def vigraNode(nodeName,uiTemplate,f,dtypeIn=np.float32,dtypeOut=np.float32,doChannelWise=False):
@@ -28,7 +55,7 @@ def vigraNode(nodeName,uiTemplate,f,dtypeIn=np.float32,dtypeOut=np.float32,doCha
 
 
 
-    class _VigraNodeImpl(CtrlNode):
+    class _VigraNodeImpl(SimpleCtrlNode):
         """%s"""%name
         nodeName = name
         uiTemplate = uiT
@@ -40,18 +67,23 @@ def vigraNode(nodeName,uiTemplate,f,dtypeIn=np.float32,dtypeOut=np.float32,doCha
             }                              # other more advanced options are available
                                            # as well..
             
-            CtrlNode.__init__(self, name, terminals=terminals)
+            SimpleCtrlNode.__init__(self, name, terminals=terminals)
             
+            self.inProcess = False
+
+
+
         def process(self, dataIn, display=True):
+            self.startProcess()
+
             if dataIn is None :
                 assert False
             # CtrlNode has created self.ctrls, which is a dict containing {ctrlName: widget}
-            print "process ",_VigraNodeImpl.nodeName
             for uit in uiTemplate:
                 pName = uit[0]
                 pType = uit[1]
 
-                print "name ",pName ,"pType",pType
+                #print "name ",pName ,"pType",pType
                 if(pType=='spin' or pType == 'intSpin'):
                     kwargs[pName]=self.ctrls[pName].value()
                 elif(pType=='check'):
@@ -66,19 +98,19 @@ def vigraNode(nodeName,uiTemplate,f,dtypeIn=np.float32,dtypeOut=np.float32,doCha
             
 
             if doChannelWise == False or dataInVigra.ndim==2 or dataInVigra.shape[2]==1:
-                print "Single Input  ",dataInVigra.shape,dataInVigra.dtype
+                #print "Single Input  ",dataInVigra.shape,dataInVigra.dtype
                 vigraResult = f(dataInVigra,**kwargs)
             else:
 
                 numChannels = dataInVigra.shape[2]
                 vigraResult  = np.ones( dataInVigra.shape,dtype=dtypeIn)
                 for c in range(numChannels):
-                    print "channel wise input :",dataInVigra[:,:,c].shape,dataInVigra[:,:,c].dtype
+                    #print "channel wise input :",dataInVigra[:,:,c].shape,dataInVigra[:,:,c].dtype
                     vigraResult[:,:,c]=f(dataInVigra[:,:,c],**kwargs)
             vigraResult = np.squeeze(vigraResult)
             vigraResult = np.require(vigraResult,dtype=dtypeOut)
 
-
+            self.endProcess()
             return {'dataOut': vigraResult}
 
     return _VigraNodeImpl        

@@ -13,6 +13,8 @@ import collections
 
 import functools
 
+import time
+
 from nodegraphics import CustomNodeGraphicsItem
 
 
@@ -381,13 +383,13 @@ class ClickImageView(pg.ImageView):
 			self.labelMode = bool(labelMode)
 
 		def buttonUpdateReleased():
-			print "update button"
+			#print "update button"
 			for d in self._viewNode.dependentNodes():
 			   d.update()
 		self.buttonUpdateLabels.released.connect(buttonUpdateReleased)
 
 		def buttonClearLabelsReleased():
-			print "clear button"
+			#print "clear button"
 			if self.imageItemLabels.labelImage is not None:
 				self.imageItemLabels.labelImage[:]=0
 			self.imageItemLabels.redrawLabels(redrawUnlabled=True,updateImage=True)
@@ -403,7 +405,7 @@ class ClickImageView(pg.ImageView):
 			self.alpha =  value/100.0
 			self.labelAlpha.setText(str(value/100.0))
 			
-			print "alpha",self.alpha
+			#print "alpha",self.alpha
 
 			if self.labelPaintImage is not None:
 

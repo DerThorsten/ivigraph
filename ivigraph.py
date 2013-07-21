@@ -173,7 +173,9 @@ class IViGrahp(QtGui.QWidget):
         FlowchartCtrlWidget.setCurrentFile=setCurrentFileFixed
 
         def loadFile(fc, fileName=None, startDir=None):#,nodes=(v1Node,v2Node,v3Node,v4Node),viewers=viewers):
-            print "my file load"
+            #print "my file load",type(fc)
+            if isinstance(fc,FlowchartCtrlWidget):
+                return
             import pyqtgraph.configfile as configfile
             if fileName is None:
                 if startDir is None:
@@ -190,13 +192,14 @@ class IViGrahp(QtGui.QWidget):
                 #fileName = QtGui.QFileDialog.getOpenFileName(None, "Load Flowchart..", startDir, "Flowchart (*.fc)")
             fileName = str(fileName)
             state = configfile.readConfigFile(fileName)
+            #print "type..",type(fc)
             fc.restoreState(state, clear=True)
             fc.viewBox.autoRange()
             #fc.emit(QtCore.SIGNAL('fileLoaded'), fileName)
             fc.sigFileLoaded.emit(fileName)
 
             for name, node in fc._nodes.items():
-                print name
+                #print name
                 if isinstance(node,ivigraph.viewerNodes[0].__class__):
                     if name =='ImageView.0':
                         node.setView(ivigraph.viewers[0])
@@ -220,8 +223,8 @@ class IViGrahp(QtGui.QWidget):
         self.batchInput      = [ folder + f for f in os.listdir(folder) if f.endswith(fFilter)]
         self.batchInputNames = [ f for f in os.listdir(folder) if f.endswith(fFilter)]
 
-        for fn in self.batchInput:
-            print fn
+        #for fn in self.batchInput:
+        #    print fn
 
         self.batchMode = True
         self.imgSelector.setBatchInputNames(self,self.batchInputNames)

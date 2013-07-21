@@ -40,6 +40,7 @@ class CustomNodeGraphicsItem(pg.GraphicsObject):
         self.menu = None
         self.buildMenu()
         
+        self.inProcess=False
         #self.node.sigTerminalRenamed.connect(self.updateActionMenu)
         
     #def setZValue(self, z):
@@ -108,21 +109,6 @@ class CustomNodeGraphicsItem(pg.GraphicsObject):
     def boundingRect(self):
         return self.bounds.adjusted(-5, -5, 5, 5)
         
-    def paint(self, p, *args):
-        
-        p.setPen(self.pen)
-        if self.isSelected():
-            p.setPen(self.selectPen)
-            p.setBrush(self.selectBrush)
-        else:
-            p.setPen(self.pen)
-            if self.hovered:
-                p.setBrush(self.hoverBrush)
-            else:
-                p.setBrush(self.brush)
-                
-        p.drawRect(self.bounds)
-
         
     def mousePressEvent(self, ev):
         ev.ignore()
@@ -209,4 +195,20 @@ class CustomNodeGraphicsItem(pg.GraphicsObject):
         
     def addOutputFromMenu(self):  ## called when add output is clicked in context menu
         self.node.addOutput(renamable=True, removable=True, multiable=False)
+        
+
+    def paint(self, p, *args):
+        p.setPen(self.pen)
+
+        if self.isSelected():
+            p.setPen(self.selectPen)
+            p.setBrush(self.selectBrush)
+        else:
+            p.setPen(self.pen)
+            if self.hovered:
+                p.setBrush(self.hoverBrush)
+            else:
+                p.setBrush(self.brush)
+        p.drawRect(self.bounds)
+
         

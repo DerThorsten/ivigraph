@@ -21,6 +21,9 @@ Dependencies:
     - Use the newest version from https://github.com/ukoethe/vigra master
 - pyqtgraph   http://www.pyqtgraph.org/   pure Python
 
+- termcolor
+    - sudo easy_install termcolor
+
 Known Bugs:
 =============
 
@@ -32,6 +35,15 @@ Known Bugs:
 
 Version
 =============
+
+
+- 0.0.6.3
+    - removed stupid prints
+    - added colored printing (needs termcolor)
+    - improved base class for ctrl nodes
+    - added timing to "vigra" nodes
+    - (hot-) fixed a so far unknown loading bug
+        (error was raised but catched)
 
 - 0.0.6.2
     - added a few demos
