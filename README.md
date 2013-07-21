@@ -36,6 +36,8 @@ Known Bugs:
 Version
 =============
 
+- 0.0.6.4
+    - use MyNode and MyCtrlNode as base for allmost all operators
 
 - 0.0.6.3
     - removed stupid prints
