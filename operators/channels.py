@@ -29,7 +29,7 @@ class ChannelStacker(MyNode):
             'Data0': dict(io='in'),
             'Data1': dict(io='in'),
             'dataOut': dict(io='out'),
-        }
+        }p
         """
 
         terminals = OrderedDict()
@@ -38,7 +38,7 @@ class ChannelStacker(MyNode):
         MyNode.__init__(self, name, terminals=terminals,nodeSize=(100,150),allowAddInput=True)
 
 
-    def process(self, *args,**kwargs):
+    def execute(self, *args,**kwargs):
 
         inputList = []
         inputShape = None

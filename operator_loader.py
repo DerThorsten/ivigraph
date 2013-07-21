@@ -29,6 +29,8 @@ import operators.vigra_tensors
 import operators.vigra_analysis
 import operators.vigra_sampling
 import operators.vigra_machine_learning
+from operators.normalize import _normalize
+from operators.node_base import MyCtrlNode
 
 
 import operators.channels
@@ -56,7 +58,7 @@ import operators.normalize
 #
 ###################################################
 
-class Selector(CtrlNode):
+class Selector(MyCtrlNode):
     """ Since the windows to show are limited one might need a selector"""
     nodeName = "Selector2"
     uiTemplate=[('selection', 'combo', {'values': ['A', 'B'], 'index': 0})]
@@ -67,8 +69,8 @@ class Selector(CtrlNode):
             'dataOut': dict(io='out'),  # to specify whether it is input or output
         }                              # other more advanced options are available
                                        # as well..
-        CtrlNode.__init__(self, name, terminals=terminals)
-    def process(self, A,B, display=True):
+        MyCtrlNode.__init__(self, name, terminals=terminals)
+    def execute(self, A,B, display=True):
         selection=self.ctrls['selection'].currentIndex()
         if selection==0:
             return {'dataOut': A}
@@ -138,7 +140,7 @@ fclib.registerNodeType(node,[('Image-Artistic',)])
 vigra.analysis.regionImageToCrackEdgeImage
 
 
-class SegVisu(CtrlNode):
+class SegVisu(MyCtrlNode):
     """ visualization of a segmentaion"""
     nodeName = "SegVisu"
 
@@ -152,10 +154,10 @@ class SegVisu(CtrlNode):
         terminals['image']=dict(io='in')
         terminals['dataOut']=dict(io='out')
         # as well..
-        CtrlNode.__init__(self, name, terminals=terminals)
+        MyCtrlNode.__init__(self, name, terminals=terminals)
 
 
-    def process(self, labelImage,image=None, display=True):
+    def execute(self, labelImage,image=None, display=True):
         #nh=4
         #if self.ctrls['neighborhood'].currentIndex() == 1 :
         #    nn=8
@@ -196,7 +198,7 @@ fclib.registerNodeType(SegVisu ,[('Image-Segmentation',)])
 
 
 
-class Watershed(CtrlNode):
+class Watershed(MyCtrlNode):
     """ (seeded) watershed"""
     nodeName = "Watershed"
 
@@ -209,8 +211,8 @@ class Watershed(CtrlNode):
             'dataOut': dict(io='out')  # to specify whether it is input or output
         }                              # other more advanced options are available
                                        # as well..
-        CtrlNode.__init__(self, name, terminals=terminals)
-    def process(self, growImage,seedImage=None, display=True):
+        MyCtrlNode.__init__(self, name, terminals=terminals)
+    def execute(self, growImage,seedImage=None, display=True):
         nh=4
         if self.ctrls['neighborhood'].currentIndex() == 1 :
             nn=8
@@ -222,7 +224,7 @@ fclib.registerNodeType(Watershed ,[('Image-Segmentation',)])
 
 
 
-class SmartWatershed(CtrlNode):
+class SmartWatershed(MyCtrlNode):
     """ (seeded) watershed"""
     nodeName = "SmartWatershed"
 
@@ -248,8 +250,8 @@ class SmartWatershed(CtrlNode):
             'dataOut': dict(io='out')  # to specify whether it is input or output
         }                              # other more advanced options are available
                                        # as well..
-        CtrlNode.__init__(self, name, terminals=terminals)
-    def process(self,dataIn, display=True):
+        MyCtrlNode.__init__(self, name, terminals=terminals)
+    def execute(self,dataIn, display=True):
 
         ################################################
         #   SEEDING
@@ -393,7 +395,7 @@ fclib.registerNodeType(node,[('Image-Segmentation',)])
 #   Blender
 #
 ###################################################
-class Blender(CtrlNode):
+class Blender(MyCtrlNode):
     """ blend images (weighted), normalize, if neccessary """
     nodeName = "Blender"
 
@@ -406,8 +408,8 @@ class Blender(CtrlNode):
             'Image2': dict(io='in'),
             'BlendedImage': dict(io='out')
         }
-        CtrlNode.__init__(self, name, terminals=terminals)
-    def process(self, Image1, Image2, display=True):
+        MyCtrlNode.__init__(self, name, terminals=terminals)
+    def execute(self, Image1, Image2, display=True):
         if Image1 is None or Image2 is None:
             return {'BlendedImage': np.zeros((0,0))}
         if len(Image1.shape) == 2:
@@ -468,7 +470,7 @@ _stringedBooleanOperators = {
     '>='    : '__ge__' 
 }
 
-class NumpyRequire(CtrlNode):
+class NumpyRequire(MyCtrlNode):
     """ blend images (weighted), normalize, if neccessary """
     nodeName = "numpy.require"
     uiTemplate = [
@@ -479,8 +481,8 @@ class NumpyRequire(CtrlNode):
             'dataIn': dict(io='in'),
             'dataOut': dict(io='out')
         }
-        CtrlNode.__init__(self, name, terminals=terminals)
-    def process(self, dataIn, display=True):
+        MyCtrlNode.__init__(self, name, terminals=terminals)
+    def execute(self, dataIn, display=True):
 
         return { 'dataOut': 
             np.require(dataIn,dtype=_numpyDtypes[  self.ctrls['dtype'].currentIndex()   ])
@@ -492,7 +494,7 @@ fclib.registerNodeType(NumpyRequire, [('Numpy',)])
 
 
 
-class NumpyWhereNot(CtrlNode):
+class NumpyWhereNot(MyCtrlNode):
     """ blend images (weighted), normalize, if neccessary """
     nodeName = "numpy.whereNot"
 
@@ -503,8 +505,8 @@ class NumpyWhereNot(CtrlNode):
             'Image': dict(io='in'),
             'Indices': dict(io='out')
         }
-        CtrlNode.__init__(self, name, terminals=terminals)
-    def process(self, Image, display=True):
+        MyCtrlNode.__init__(self, name, terminals=terminals)
+    def execute(self, Image, display=True):
         ignore_value = self.ctrls['ignore'].value()
         if ignore_value is not None:
             return {'Indices': np.where(Image != ignore_value)}

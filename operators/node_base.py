@@ -44,6 +44,17 @@ class MyNode(Node):
         return self._graphicsItem
 
 
+    def execute(self, *args, **kwargs):
+        pass
+
+
+    def process(self, *args, **kwargs):
+        self.startProcess()
+        return_value = self.execute(*args, **kwargs)
+        self.endProcess()
+        return return_value
+
+
 
 class MyCtrlNode(CtrlNode):
     def __init__(self,name,terminals,nodeSize=(100,100)):
@@ -63,6 +74,17 @@ class MyCtrlNode(CtrlNode):
         if self._graphicsItem is None:
             self._graphicsItem = CustomNodeGraphicsItem(self,self.nodeSize)
         return self._graphicsItem
+
+
+    def execute(self, *args, **kwargs):
+        pass
+
+
+    def process(self, *args, **kwargs):
+        self.startProcess()
+        return_value = self.execute(*args, **kwargs)
+        self.endProcess()
+        return return_value
 
 
 def numpyInNumpyOutNode(nodeName,uiTemplate,f,dtypeIn=np.float32,dtypeOut=np.float32,doChannelWise=False,nodeSize=(100,100)):
@@ -92,8 +114,7 @@ def numpyInNumpyOutNode(nodeName,uiTemplate,f,dtypeIn=np.float32,dtypeOut=np.flo
 
 
 
-        def process(self, dataIn, display=True):
-            self.startProcess()
+        def execute(self, dataIn, display=True):
 
             if dataIn is None :
                 assert False
@@ -129,7 +150,6 @@ def numpyInNumpyOutNode(nodeName,uiTemplate,f,dtypeIn=np.float32,dtypeOut=np.flo
             vigraResult = np.squeeze(vigraResult)
             vigraResult = np.require(vigraResult,dtype=dtypeOut)
 
-            self.endProcess()
             return {'dataOut': vigraResult}
 
     return _numpyInNumpyOutNodeImpl        

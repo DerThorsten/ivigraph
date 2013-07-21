@@ -77,8 +77,8 @@ class StructureTensorTrace(MyCtrlNode):
         }                              # other more advanced options are available
                                        # as well..
         MyCtrlNode.__init__(self, name, terminals=terminals)
-    def process(self, Image, display=True):
-        self.startProcess()
+    def execute(self, Image, display=True):
+        
         tensorValues = vigra.filters.structureTensor(image=Image,
                                                      innerScale = self.ctrls['innerscale'].value(),
                                                      outerScale = self.ctrls['outerscale'].value())
@@ -90,7 +90,7 @@ class StructureTensorTrace(MyCtrlNode):
             out += tensorValues[..., index]
             index += stepSize
             stepSize -= 1
-        self.endProcess()
+        
         return {'dataOut': out}
         
 
@@ -110,8 +110,8 @@ class TensorTrace(MyCtrlNode):
         }
 
         MyCtrlNode.__init__(self, name, terminals=terminals)
-    def process(self, Tensor, display=True):
-        self.startProcess()
+    def execute(self, Tensor, display=True):
+        
         assert len(Tensor.shape) == 3
         out = np.zeros(Tensor.shape[:2])
         stepSize = math.sqrt(2*Tensor.shape[2] + 0.25) - 0.5
@@ -121,7 +121,7 @@ class TensorTrace(MyCtrlNode):
             out += Tensor[..., index]
             index += stepSize
             stepSize -= 1
-        self.endProcess()
+        
         return {'dataOut': out}
 
 

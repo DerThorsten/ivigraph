@@ -37,8 +37,8 @@ class RandomForest(MyCtrlNode):
             'OOB-Error': dict(io='out'),
         }
         MyCtrlNode.__init__(self, name, terminals=terminals,nodeSize=(150,150))
-    def process(self, Features, Labels, display=True):
-        self.startProcess()
+    def execute(self, Features, Labels, display=True):
+        
         numFeatures = Features.shape[2]
 
         shape = Labels.shape
@@ -80,7 +80,7 @@ class RandomForest(MyCtrlNode):
         probsImg = np.array(probs)
         probsImg = probsImg.reshape(tuple(shape)+(2,))
 
-        self.endProcess()
+        
         return {
             'RF': None,
             'PredictedLabels' : None,
@@ -115,8 +115,8 @@ class LearnRandomForest(MyCtrlNode):
             'OOB-Error': dict(io='out')
         }
         MyCtrlNode.__init__(self, name, terminals=terminals)
-    def process(self, FeatureMatrix, LabelVector, display=True):
-        self.startProcess()
+    def execute(self, FeatureMatrix, LabelVector, display=True):
+        
         if FeatureMatrix is None or LabelVector is None:
             return
         if FeatureMatrix.shape[0] != LabelVector.shape[0]:
@@ -127,7 +127,7 @@ class LearnRandomForest(MyCtrlNode):
             LabelVector = LabelVector.astype(np.uint32)
         rf = vigra.learning.RandomForest(treeCount=self.ctrls['number of trees'].value())
         oob = rf.learnRF(FeatureMatrix, LabelVector)
-        self.endProcess()
+        
         return {'RandomForest': rf, 'OOB-Error': oob}
 
 fclib.registerNodeType(LearnRandomForest, [('Image-MachineLearning',)])
@@ -149,14 +149,14 @@ class PredictRandomForest(MyCtrlNode):
             'Predictions': dict(io='out')
         }
         MyCtrlNode.__init__(self, name, terminals=terminals)
-    def process(self, FeatureMatrix, RandomForest, display=True):
-        self.startProcess()
+    def execute(self, FeatureMatrix, RandomForest, display=True):
+        
         if FeatureMatrix is None:
             return
         if FeatureMatrix.dtype is not np.float32:
             FeatureMatrix = FeatureMatrix.astype(np.float32)
         predictions = RandomForest.predictProbabilities(FeatureMatrix)
-        self.endProcess()
+        
         return {'Predictions': predictions}
 
 fclib.registerNodeType(PredictRandomForest, [('Image-MachineLearning',)])
@@ -182,15 +182,15 @@ class PredictionToImage(MyCtrlNode):
             'Image': dict(io='out')
         }
         MyCtrlNode.__init__(self, name, terminals=terminals)
-    def process(self, Predictions, ImageForShape, display=True):
-        self.startProcess()
+    def execute(self, Predictions, ImageForShape, display=True):
+        
         if Predictions is None or ImageForShape is None:
             return
         print ImageForShape.shape
         print Predictions.shape
         classLabel = self.ctrls['probability for class'].value()
         Image = Predictions[...,classLabel-1].reshape(ImageForShape.shape, order='F')
-        self.endProcess()
+        
         return {'Image': Image}
 
 fclib.registerNodeType(PredictionToImage, [('Image-MachineLearning',)])
@@ -220,8 +220,8 @@ class FeatureStackToMatrix(MyCtrlNode):
             'LabelVector': dict(io='out')
         }
         MyCtrlNode.__init__(self, name, terminals=terminals,nodeSize=(200,100))
-    def process(self, LabelImage, Features, display=True):
-        self.startProcess()
+    def execute(self, LabelImage, Features, display=True):
+        
         if Features is None or \
            np.all(LabelImage == 0):
             return {'FeatureMatrix': None, 'LabelVector': None}
@@ -246,7 +246,7 @@ class FeatureStackToMatrix(MyCtrlNode):
         for index in xrange(Features.shape[-1]):
             feature = Features[...,index]
             feature_matrix[..., index] = feature[label_indices].flatten()
-        self.endProcess()
+        
         return {'FeatureMatrix': feature_matrix, 'LabelVector': label_vector}
             
     
