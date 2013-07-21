@@ -40,6 +40,9 @@ Known Bugs:
 Version
 =============
 
+- 0.0.6.5
+    - fixed minor bug in vigra_machine_learning.py
+
 - 0.0.6.4
     - use MyNode and MyCtrlNode as base for allmost all operators
 

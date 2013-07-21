@@ -219,7 +219,7 @@ class FeatureStackToMatrix(MyCtrlNode):
             'FeatureMatrix': dict(io='out'),
             'LabelVector': dict(io='out')
         }
-        MyCtrlNode.__init__(self, name, terminals=terminals)
+        MyCtrlNode.__init__(self, name, terminals=terminals,nodeSize=(200,100))
     def process(self, LabelImage, Features, display=True):
         self.startProcess()
         if Features is None or \
@@ -250,10 +250,5 @@ class FeatureStackToMatrix(MyCtrlNode):
         return {'FeatureMatrix': feature_matrix, 'LabelVector': label_vector}
             
     
-    def graphicsItem(self):
-        if self._graphicsItem is None:
-            self._graphicsItem = CustomNodeGraphicsItem(self,(200,100))
-        return self._graphicsItem
-
 
 fclib.registerNodeType(FeatureStackToMatrix, [('Image-MachineLearning',)])
