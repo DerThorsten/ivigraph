@@ -16,6 +16,7 @@ Cick on Flowchart-Button in the GUI and edit the graph
 
 Dependencies:
 =============
+- numpy
 - vigranumpy   http://hci.iwr.uni-heidelberg.de/vigra/  Python and Boost Python Wrapped C++ Code
     - one currently needs a very new version if vigra .
     - Use the newest version from https://github.com/ukoethe/vigra master
@@ -23,6 +24,9 @@ Dependencies:
 
 - termcolor
     - sudo easy_install termcolor
+- scipy
+
+
 
 Known Bugs:
 =============
