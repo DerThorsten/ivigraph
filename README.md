@@ -28,6 +28,7 @@ Known Bugs:
 	- one might need change the histogram range a tiny bit to
 	  refresh the image
 - sometimes one gets floating point error when deleting edges no idea what is going on
+    - (can someone reproduce this error?)
 
 Version
 =============
