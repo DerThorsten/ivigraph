@@ -1,6 +1,7 @@
 from pyqtgraph.flowchart import Flowchart, Node,FlowchartCtrlWidget
 import pyqtgraph.flowchart.library as fclib
 from pyqtgraph.flowchart.library.common import CtrlNode
+import pyqtgraph.configfile as configfile
 from pyqtgraph.Qt import QtGui, QtCore
 import pyqtgraph as pg
 import numpy as np
@@ -163,14 +164,48 @@ class IViGrahp(QtGui.QWidget):
         ivigraph = self
 
         def setCurrentFileFixed(fcc, fileName):
-            fcc.currentFileName = fileName
-            if fileName is None:
+
+            fn = str(fileName)
+            if fn.endswith('.fc')==False:
+                fn+='.fc'
+
+            fcc.currentFileName = fn
+            if fn is None:
                 fcc.ui.fileNameLabel.setText("<b>[ new ]</b>")
             else:
                 fcc.ui.fileNameLabel.setText("<b>%s</b>" % os.path.split(str(fcc.currentFileName))[1])
             fcc.resizeEvent(None)
 
+
+
+        def saveFile(self, fileName=None, startDir=None, suggestedFileName='flowchart.fc'):
+            
+            if fileName is not None:
+                fileName = str(fileName)
+                if fileName.endswith('.fc')==False:
+                    fileName+='.fc'
+
+            if fileName is None:
+                if startDir is None:
+                    startDir = self.filePath
+                if startDir is None:
+                    startDir = '.'
+                self.fileDialog = pg.FileDialog(None, "Save Flowchart..", startDir, "Flowchart (*.fc)")
+                #self.fileDialog.setFileMode(QtGui.QFileDialog.AnyFile)
+                self.fileDialog.setAcceptMode(QtGui.QFileDialog.AcceptSave) 
+                #self.fileDialog.setDirectory(startDir)
+                self.fileDialog.show()
+                self.fileDialog.fileSelected.connect(self.saveFile)
+                return
+                #fileName = QtGui.QFileDialog.getSaveFileName(None, "Save Flowchart..", startDir, "Flowchart (*.fc)")
+            configfile.writeConfigFile(self.saveState(), fileName)
+            self.sigFileSaved.emit(fileName)
+
         FlowchartCtrlWidget.setCurrentFile=setCurrentFileFixed
+        ivigraph.flowChart.saveFile=types.MethodType(saveFile,ivigraph.flowChart)
+
+
+
 
         def loadFile(fc, fileName=None, startDir=None):#,nodes=(v1Node,v2Node,v3Node,v4Node),viewers=viewers):
             #print "my file load",type(fc)
