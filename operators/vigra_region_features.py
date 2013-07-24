@@ -62,18 +62,28 @@ class RegionFeaturesNode(MyNode):
         MyNode.__init__(self, name, terminals=terminals, nodeSize=(150,150))
         self.used_features = ['Mean']
         self.ui, self.stateGroup, self.ctrls = fclib.common.generateUi(ui)
+        #self.ui.setParent(No)
+        self.action_button = QtGui.QPushButton(text = "Get Features", parent = self.ui)
+        self.ui.layout().addRow(self.action_button)
 
-
+        self.action_button.setEnabled(False)
     def update(self, signal=True):
         vals = self.inputValues()
         FeatureImage = vals['FeatureImage']
         LabelImage = vals['LabelImage']
+
+
+
+
+        ui = _generate_region_features_checked_list(checked_true = ['Sum'])
+        #                                                         feature_image = FeatureImage,
+        #                                                         label_image = LabelImage)
+        #self.ui, self.stateGroup, self.ctrls = fclib.common.generateUi(ui)
+        #self.ui.update()
+        #self.ui.show()
+        
         if not (FeatureImage is None or LabelImage is None):
-            ui = _generate_region_features_checked_list(checked_true = ['Sum'])
-            #                                                         feature_image = FeatureImage,
-            #                                                         label_image = LabelImage)
-            self.ui, self.stateGroup, self.ctrls = fclib.common.generateUi(ui)
-            self.ui.update()
+            self.action_button.setEnabled(True)
             # self.stateGroup.sigChanged.connect(self.changed)
 
             #gi = self.graphicsItem()
