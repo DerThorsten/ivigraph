@@ -70,7 +70,8 @@ class AdvCtrlNode(Node):
         self.changed()
         
 
-    def onAction(actionName)
+    def onAction(self,actionName):
+        pass
 
     def changed(self):  
         self.update()
