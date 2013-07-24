@@ -3,12 +3,53 @@ import vigra
 import math
 from collections import OrderedDict
 
-from node_base import convertNh, MyNode,MyCtrlNode,numpyInNumpyOutNode
+from node_base import AdvCtrlNode,convertNh, MyNode,MyCtrlNode,numpyInNumpyOutNode
 import pyqtgraph.flowchart.library as fclib
 
 
+import pyqtgraph.parametertree.parameterTypes as pTypes
+from pyqtgraph.parametertree import Parameter, ParameterTree, ParameterItem, registerParameterType
 
 
+
+
+
+
+
+class TestNode(AdvCtrlNode):
+    """ blend images (weighted), normalize, if neccessary """
+    nodeName = "TestNode"
+
+    def __init__(self, name):
+        terminals = {
+            'dataIn': dict(io='in'),
+            'dataOut': dict(io='out')
+        }
+        params = [
+            {'name': 'Group1', 'type': 'group', 'children': [
+                {'name': 'NamedList_', 'type': 'list', 'values': {"one": 1, "two": 2, "three": 3}, 'value': 2},
+                {'name': 'NamedList', 'type': 'list', 'values': {"one": 1, "two": 2, "three": 3}, 'value': 2},
+                {'name': 'Subgroup', 'type': 'group', 'children': [
+                    {'name': 'Sub-param1', 'type': 'int', 'value': 10},
+                    {'name': 'Sub-param2', 'type': 'float', 'value': 1.2e6},
+                    {'name': 'Sub-param3', 'type': 'float', 'value': 1.2e6},
+                ]},
+                {'name': 'Action Parameter', 'type': 'action'},
+            ]},
+            {'name': 'P2', 'type': 'int', 'value': 10},
+        ]
+
+
+        
+        AdvCtrlNode.__init__(self, name,ui=params, terminals=terminals)
+    def execute(self, dataIn, display=True):
+        print "\n\n\n-------1------\n\n\n",self.getParamValue(['P2'])
+        print "\n\n\n-------2------\n\n\n",self.getParamValue(['Group1','NamedList_'])
+        print "\n\n\n-------3------\n\n\n",self.getParamValue(['Group1','Subgroup','Sub-param2'])
+        return {'dataOut':None}
+
+
+fclib.registerNodeType(TestNode, [('Tests',)])
 
 
 ###################################################

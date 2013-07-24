@@ -16,6 +16,202 @@ from nodegraphics import CustomNodeGraphicsItem
 from termcolor import colored
 import time
 
+import pyqtgraph.parametertree.parameterTypes as pTypes
+from pyqtgraph.parametertree import Parameter, ParameterTree, ParameterItem, registerParameterType
+
+
+
+
+class Found(Exception): pass
+
+class AdvCtrlNode(Node):
+    """Abstract class for nodes with auto-generated control UI"""
+    
+    sigStateChanged = QtCore.Signal(object)
+    def __init__(self, name, ui=None, terminals=None):
+
+        Node.__init__(self, name=name, terminals=terminals)
+        
+        
+
+        #self.widget = QtGui.QWidget()
+        #l = QtGui.QVBoxLayout()
+        #l.setSpacing(0)
+        #self.widget.setLayout(l)
+
+
+        self.param = Parameter.create(name='params', type='group', children=ui)
+            
+        self.uiTree = ParameterTree()
+        self.uiTree.setParameters(self.param , showTop=False)
+
+
+        #l.addWidget(self.uiTree)
+
+
+        self.param.sigTreeStateChanged.connect(self.changedTree)
+    
+    def ctrlWidget(self):
+        return self.uiTree
+       
+    def changedTree(self,param,changes):
+
+        print("tree changes:")
+        for param, change, data in changes:
+            path = self.param.childPath(param)
+            if path is not None:
+                childName = '.'.join(path)
+            else:
+                childName = param.name()
+            print('  parameter: %s'% childName)
+            print('  change:    %s'% change)
+            print('  data:      %s'% str(data))
+            print('  ----------')
+        self.changed()
+        
+
+
+    def changed(self):
+        self.update()
+        self.sigStateChanged.emit(self)
+
+    def startProcess(self):
+        print colored('\nStart', 'blue'), colored(self.name(), 'green')
+        self.t0 = time.time()
+    def endProcess(self):
+        t1 = time.time()
+        t = t1-self.t0
+        print colored('Done ', 'blue'),colored("%f sek"%float(t),'green')
+
+    """
+    def graphicsItem(self):
+        if self._graphicsItem is None:
+            self._graphicsItem = CustomNodeGraphicsItem(self,(200,200))
+        return self._graphicsItem
+    """
+
+    def execute(self, *args, **kwargs):
+        pass
+
+
+    def process(self, *args, **kwargs):
+        self.startProcess()
+        return_value = self.execute(*args, **kwargs)
+        self.endProcess()
+        return return_value
+
+
+    def getParamValue(self,names):
+        depth = len(names)
+        print "get values "
+
+
+
+        if depth == 1 : 
+            return self.param.getValues()[names[0]][0]
+
+        if depth >= 2 :
+
+
+            current  = None
+            currentP = None
+
+            cp  = self.param
+
+            print "startname ",cp.name()
+
+            counter=0
+            while(True):
+                #print "while loop enter name ",cp.name(),counter
+
+
+                if cp.name()==names[len(names)-1]:
+                    #print "\n\n\nLAST NAME MATCH"
+                    pass
+                try :
+                    for d,name in enumerate(names[counter:len(names)]):
+                        doBreak=False
+                        #print "d,name",d,name
+                        childs =  cp.children()
+                        #print " \n ITERATE CHILDS \n"
+                        for ci,c in enumerate(childs) :
+
+                            cName = c.name()
+                            #print "cname",cName
+                            if cName == name :
+                                #print "names match"
+                                
+                                cpOld=cp
+                                cp=c
+                               
+
+
+                                #print "____counter",counter
+                                #print "____current",cp
+                               #print "____currentPara",cp.getValues()
+
+                                if counter == depth -1:
+                                    #print "in depth -1  ci",ci
+                                    #print "try in old" ,type(cpOld.getValues())," len ",len(cpOld.getValues())
+                                    #print "try in old2" ,cpOld.getValues()[cName][0]
+                                    return cpOld.getValues()[cName][0]
+                   
+                                counter+=1
+
+                                raise Found
+
+                            else :
+                                #print "names do not match"
+                                continue
+
+                            #print "name", c.name()
+                            #print "get values",c.getValues()
+                
+                except Found:
+                    #print "\n\n\n FOund"
+                    pass
+
+                #print "counter",counter
+                #print "current",cp
+                #print "currentPara",cp.getValues()
+                if counter == depth:
+                    #print "finished??!?"
+                    break
+
+               
+
+
+
+            return current[0]
+
+
+    """
+    def saveState(self):
+        state = Node.saveState(self)
+        state['ctrl'] = self.stateGroup.state()
+        return state
+    
+    def restoreState(self, state):
+        Node.restoreState(self, state)
+        if self.stateGroup is not None:
+            self.stateGroup.setState(state.get('ctrl', {}))
+            
+    def hideRow(self, name):
+        w = self.ctrls[name]
+        l = self.ui.layout().labelForField(w)
+        w.hide()
+        l.hide()
+        
+    def showRow(self, name):
+        w = self.ctrls[name]
+        l = self.ui.layout().labelForField(w)
+        w.show()
+        l.show()
+
+
+    """
+
+
 
 def convertNh(nh):
     if nh == 0 : neighborhood = 4
