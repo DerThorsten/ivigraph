@@ -8,6 +8,7 @@ import operators.vigra_tensors
 import operators.vigra_analysis
 import operators.vigra_sampling
 import operators.vigra_machine_learning
+import operators.vigra_region_features
 from operators.normalize import _normalize
 from operators.node_base import MyCtrlNode
 import operators.vigra_segmentation 
