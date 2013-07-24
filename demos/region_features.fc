@@ -1,0 +1,41 @@
+pos: (0.0, 0.0)
+connects: [('Input', 'dataIn', 'SlicSuperpixels.0', 'dataIn'), ('SlicSuperpixels.0', 'dataOut', 'ImageView.1', 'data'), ('SlicSuperpixels.0', 'dataOut', 'Output', 'dataOut'), ('Input', 'dataIn', 'RegionFeatures.0', 'FeatureImage'), ('SlicSuperpixels.0', 'dataOut', 'RegionFeatures.0', 'LabelImage'), ('Input', 'dataIn', 'ImageView.0', 'data')]
+terminals:
+    dataOut:
+        multi: False
+        io: 'out'
+        renamable: False
+        multiable: False
+        removable: False
+        optional: False
+    dataIn:
+        multi: False
+        io: 'in'
+        renamable: False
+        multiable: False
+        removable: False
+        optional: False
+bypass: False
+inputNode:
+    terminals:
+        dataIn:
+            multi: False
+            io: 'out'
+            renamable: False
+            multiable: False
+            removable: False
+            optional: False
+    pos: (-150.0, 0.0)
+    bypass: False
+nodes: [{'state': {'pos': (150.0, -150.0), 'bypass': False, 'ctrl': {'_fake_param': 5}}, 'pos': (150.0, -150.0), 'class': 'ImageView', 'name': 'ImageView.1'}, {'state': {'pos': (0.0, -150.0), 'bypass': False, 'ctrl': {'_fake_param': 5}}, 'pos': (0.0, -150.0), 'class': 'ImageView', 'name': 'ImageView.0'}, {'state': {'pos': (450.0, -150.0), 'bypass': False, 'ctrl': {'_fake_param': 5}}, 'pos': (450.0, -150.0), 'class': 'ImageView', 'name': 'ImageView.3'}, {'state': {'pos': (300.0, -150.0), 'bypass': False, 'ctrl': {'_fake_param': 5}}, 'pos': (300.0, -150.0), 'class': 'ImageView', 'name': 'ImageView.2'}, {'state': {'pos': (132.4975930688275, 92.17162234989456), 'bypass': False, 'ctrl': {'Principal<PowerSum<3> >': False, 'Principal<PowerSum<4> >': False, 'Coord<PowerSum<1> >': False, 'Coord<Principal<PowerSum<4> > >': False, 'Coord<Minimum >': False, 'Principal<Kurtosis >': False, 'Principal<Minimum >': False, 'RegionAxes': False, 'Skewness': False, 'RegionRadii': False, 'Covariance': False, 'Principal<Variance>': False, 'Minimum': False, 'Central<PowerSum<3> >': False, 'Kurtosis': False, 'Sum': False, 'Count': False, 'Principal<Maximum >': False, 'Coord<Principal<PowerSum<3> > >': False, 'Maximum': False, 'Variance': False, 'Principal<PowerSum<2> >': False, 'Coord<Maximum >': False, 'Central<PowerSum<4> >': False, 'Mean': False, 'Principal<Skewness >': False, 'Coord<Principal<Skewness > >': False, 'Coord<Principal<Kurtosis > >': False, 'Coord<DivideByCount<Principal<PowerSum<2> > > >': False, 'Coord<Principal<PowerSum<2> > >': False, 'RegionCenter': False, 'Central<PowerSum<2> >': False, 'PrincipalAxes': False}}, 'pos': (132.4975930688275, 92.17162234989456), 'class': 'RegionFeatures', 'name': 'RegionFeatures.0'}, {'state': {'pos': (0.0, 0.0), 'bypass': False, 'ctrl': {'minSize': 0, 'intensityScaling': 6.0, 'seedDistance': 15, 'iterations': 10}}, 'pos': (0.0, 0.0), 'class': 'SlicSuperpixels', 'name': 'SlicSuperpixels.0'}]
+outputNode:
+    terminals:
+        dataOut:
+            multi: False
+            io: 'in'
+            renamable: False
+            multiable: False
+            removable: False
+            optional: False
+    pos: (300.0, 0.0)
+    bypass: False
