@@ -248,6 +248,13 @@ class IViGrahp(QtGui.QWidget):
 
         ivigraph.flowChart.loadFile=types.MethodType(loadFile,ivigraph.flowChart)
 
+
+    def _updateInput(self,index):
+        data = vigra.readImage(self.batchInput[index])
+        self.flowChart.setInput(dataIn=data)
+
+
+
     def setInput(self,**kwargs):
         self.flowChart.setInput(**kwargs)
         self.batchMode = False
@@ -266,7 +273,5 @@ class IViGrahp(QtGui.QWidget):
         self.imgSelector.setCurrentIndex(0)
         self.imageSelectorDock.show()
 
-    def _updateInput(self,index):
-        data = vigra.readImage(self.batchInput[index])
-        self.flowChart.setInput(dataIn=data)
 
+    

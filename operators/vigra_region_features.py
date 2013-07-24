@@ -1,6 +1,6 @@
 import numpy as np
 import vigra
-from node_base import MyCtrlNode
+from node_base import MyCtrlNode,MyNode
 import pyqtgraph.flowchart.library as fclib
 from pyqtgraph.flowchart import Node
 from pyqtgraph.Qt import QtGui, QtCore
@@ -35,11 +35,13 @@ def _get_checked_features(check_list):
     return checked_features
     
 
-class RegionFeaturesNode(MyCtrlNode):
+class RegionFeaturesNode(MyNode):
     """extract region features"""
     nodeName = "RegionFeatures"
 
-    uiTemplate = []
+    #uiTemplate = []
+    uiTemplate = _generate_region_features_checked_list(checked_true = ['Mean'])
+
 
     def __init__(self, name):
         terminals = {
@@ -48,9 +50,18 @@ class RegionFeaturesNode(MyCtrlNode):
             'RegionFeatures': dict(io='out'),
             'UsedFeatures': dict(io='out')
         }
-        self.ui = None
-        MyCtrlNode.__init__(self, name, terminals=terminals, nodeSize=(150,150))
+
+
+
+        ui = None
+        if ui is None:
+            if hasattr(self, 'uiTemplate'):
+                ui = self.uiTemplate
+            else:
+                ui = []
+        MyNode.__init__(self, name, terminals=terminals, nodeSize=(150,150))
         self.used_features = ['Mean']
+        self.ui, self.stateGroup, self.ctrls = fclib.common.generateUi(ui)
 
 
     def update(self, signal=True):
@@ -61,15 +72,40 @@ class RegionFeaturesNode(MyCtrlNode):
             self.uiTemplate = _generate_region_features_checked_list(checked_true = self.used_features,
                                                                      feature_image = FeatureImage,
                                                                      label_image = LabelImage)
-            self.ui, self.stateGroup, self.ctrls = fclib.common.generateUi(self.uiTemplate)
-            # self.stateGroup.sigChanged.connect(self.changed)
-            self.ui.setParent(None)
-            action_button = QtGui.QPushButton(text = "Get Features", parent = self.ui)
-            self.ui.layout().addRow(action_button)
-            self.ui.show()
-            action_button.clicked.connect(super(MyCtrlNode, self).update)
-
             
+            # self.stateGroup.sigChanged.connect(self.changed)
+
+            #gi = self.graphicsItem()
+
+
+            #self.ui.setParent(gi)
+            #action_button = QtGui.QPushButton(text = "Get Features", parent = self.ui)
+            #self.ui.layout().addRow(action_button)
+            #self.ui.show()
+            #action_button.clicked.connect(super(MyCtrlNode, self).update)
+
+
+    def restoreState(self, state):
+        Node.restoreState(self, state)
+        if self.stateGroup is not None:
+            self.stateGroup.setState(state.get('ctrl', {}))
+
+
+    def ctrlWidget(self):
+        return self.ui
+
+    def hideRow(self, name):
+        w = self.ctrls[name]
+        l = self.ui.layout().labelForField(w)
+        w.hide()
+        l.hide()
+        
+    def showRow(self, name):
+        w = self.ctrls[name]
+        l = self.ui.layout().labelForField(w)
+        w.show()
+        l.show()
+
     def execute(self, FeatureImage, LabelImage, display=True):
         if FeatureImage is None or LabelImage is None:
             return None
