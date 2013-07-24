@@ -40,7 +40,7 @@ class RegionFeaturesNode(MyNode):
     nodeName = "RegionFeatures"
 
     #uiTemplate = []
-    uiTemplate = _generate_region_features_checked_list(checked_true = ['Mean'])
+    #uiTemplate = _generate_region_features_checked_list(checked_true = ['Mean'])
 
 
     def __init__(self, name):
@@ -55,8 +55,8 @@ class RegionFeaturesNode(MyNode):
 
         ui = None
         if ui is None:
-            if hasattr(self, 'uiTemplate'):
-                ui = self.uiTemplate
+            if True:#hasattr(self, 'uiTemplate'):
+                ui = _generate_region_features_checked_list(checked_true = ['Mean'])
             else:
                 ui = []
         MyNode.__init__(self, name, terminals=terminals, nodeSize=(150,150))
@@ -69,10 +69,11 @@ class RegionFeaturesNode(MyNode):
         FeatureImage = vals['FeatureImage']
         LabelImage = vals['LabelImage']
         if not (FeatureImage is None or LabelImage is None):
-            self.uiTemplate = _generate_region_features_checked_list(checked_true = self.used_features,
-                                                                     feature_image = FeatureImage,
-                                                                     label_image = LabelImage)
-            
+            ui = _generate_region_features_checked_list(checked_true = ['Sum'])
+            #                                                         feature_image = FeatureImage,
+            #                                                         label_image = LabelImage)
+            self.ui, self.stateGroup, self.ctrls = fclib.common.generateUi(ui)
+            self.ui.update()
             # self.stateGroup.sigChanged.connect(self.changed)
 
             #gi = self.graphicsItem()
