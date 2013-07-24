@@ -70,8 +70,9 @@ class AdvCtrlNode(Node):
         self.changed()
         
 
+    def onAction(actionName)
 
-    def changed(self):
+    def changed(self):  
         self.update()
         self.sigStateChanged.emit(self)
 
