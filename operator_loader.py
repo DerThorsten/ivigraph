@@ -17,3 +17,4 @@ import operators.input_selector
 import operators.numpy_op           
 import operators.channels
 import operators.normalize
+import operators.make_container

@@ -47,6 +47,10 @@ Authors
 Version
 =============
 
+- 0.0.6.7
+    - experimental region features
+    - added make list , make tupe node
+
 - 0.0.6.6
     - refactored node base classes 
     - split operators into seperated files

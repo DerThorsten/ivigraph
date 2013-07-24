@@ -17,7 +17,7 @@ import pyqtgraph.flowchart.library as fclib
 #
 ###################################################
 class ChannelStacker(MyNode):
-    """ blend images (weighted), normalize, if neccessary """
+    """ stack channels of all input(s) """
     nodeName = "ChannelStacker"
 
     uiTemplate=[
@@ -46,9 +46,7 @@ class ChannelStacker(MyNode):
         for termName in self.terminals.keys():
             term = self.terminals[termName]
             if termName in self._inputs:
-                print "kwargs[%s]"%termName, kwargs[termName]
                 inputData  =  kwargs[termName]
-
                 if inputData is not None:
                     data  = np.array(inputData,dtype=np.float32)
                     iShape = data.shape
