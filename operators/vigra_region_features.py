@@ -21,10 +21,9 @@ def _generate_region_features_checked_list(checked_true = ['Mean'],
     uiTemplate = []
     for feature in features:
         check_value = False
-        print feature, checked_true
         if feature in checked_true:
             check_value = True
-        uiTemplate.append((feature, 'check', {'value': check_value}))
+        uiTemplate.append((feature, 'check', {'checked': check_value}))
     return uiTemplate
 
 
@@ -49,9 +48,10 @@ class RegionFeaturesNode(MyCtrlNode):
             'RegionFeatures': dict(io='out'),
             'UsedFeatures': dict(io='out')
         }
-        
+        self.ui = None
         MyCtrlNode.__init__(self, name, terminals=terminals, nodeSize=(150,150))
         self.used_features = ['Mean']
+
 
     def update(self, signal=True):
         vals = self.inputValues()
