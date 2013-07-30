@@ -40,7 +40,9 @@ node = numpyInNumpyOutNode(
         ('innerScale',          'spin', {'value': 1.50, 'step': 0.25, 'range': [0.01, None]}),
         ('outerScale',          'spin', {'value': 2.50, 'step': 0.25, 'range': [0.01, None]}),
     ],
-    f=vigra.filters.structureTensor
+    f=vigra.filters.structureTensor,
+    doChannelWise=True,
+    tensor=True
 )
 fclib.registerNodeType(node,[('Image-Tensors',)])
 
@@ -49,7 +51,7 @@ node = numpyInNumpyOutNode(
     uiTemplate=[
         ('scale','spin', {'value': 1.50, 'step': 0.25, 'range': [0.01, None]})
     ],
-    f=vigra.filters.laplacianOfGaussian
+    f=vigra.filters.laplacianOfGaussian,
 )
 fclib.registerNodeType(node,[('Image-Tensors',)])
 

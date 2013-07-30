@@ -46,6 +46,8 @@ Authors
 
 Version
 =============
+- 0.0.6.10
+    - fixed tensor nodes a bit ( some of them work with colorchannel images now)
 
 - 0.0.6.9
     - batch mode image selector combo box is working
