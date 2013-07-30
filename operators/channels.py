@@ -5,7 +5,7 @@ from collections import OrderedDict
 
 from node_base import MyNode,MyCtrlNode,numpyInNumpyOutNode
 import pyqtgraph.flowchart.library as fclib
-
+from normalize import _normalize
 
 
 

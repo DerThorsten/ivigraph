@@ -45,6 +45,7 @@ class AdvCtrlNode(Node):
         self.uiTree = ParameterTree()
         self.uiTree.setParameters(self.param , showTop=False)
 
+        self.uiTree.setMinimumSize(1,350)
 
         #l.addWidget(self.uiTree)
 
@@ -67,11 +68,16 @@ class AdvCtrlNode(Node):
             print('  change:    %s'% change)
             print('  data:      %s'% str(data))
             print('  ----------')
+
+            if change == 'activated':
+                self.onActionButtonPress(path)
+                return
+
         self.changed()
         
 
-    def onAction(self,actionName):
-        pass
+    def onActionButtonPress(self,actionPath):
+        pass#print "onActionButtonPress",actionPath
 
     def changed(self):  
         self.update()
@@ -120,7 +126,7 @@ class AdvCtrlNode(Node):
 
             cp  = self.param
 
-            print "startname ",cp.name()
+            #print "startname ",cp.name()
 
             counter=0
             while(True):
