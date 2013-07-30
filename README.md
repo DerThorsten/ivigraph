@@ -30,11 +30,11 @@ Dependencies:
 
 Known Bugs:
 =============
-
-- load:
+- ColorChannel Nodes do not work on some machines ( strage vigra c++ signature error)
+- Load:
 	- one might need change the histogram range a tiny bit to
 	  refresh the image
-- sometimes one gets floating point error when deleting edges no idea what is going on
+- Sometimes one gets floating point error when deleting edges no idea what is going on
     - (can someone reproduce this error?)
 
 
@@ -50,6 +50,7 @@ Version
 - 0.0.6.8
     - viewer will autoselect "channel wise" - mode if image
       has not dim==3 and ( shape[2]==3 or shape[2]==4)
+    - removed prints
 
 - 0.0.6.7
     - experimental region features (dummy,does not work so far)

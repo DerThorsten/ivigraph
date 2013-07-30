@@ -185,55 +185,7 @@ class ClickImageView(pg.ImageView):
 		#self.belowImgBox.addStretch(1)
 		self.layout().addLayout(self.belowImgBox,1,0)
 
-		"""
-		self.layout().addLayout(self.rightImgBox,0,1)
-		#right image stuff
-		numImages = 5
-		self.perImgCtrLayout=[]
-		self.slidersAlpha=[]
-		self.labelsAlphaValue=[]
-		self.perImgLayout=[]
-		# prevent gc'ing ?!?
-		for image in xrange(numImages):
-			self.perImgLayout.append( QtGui.QHBoxLayout() )
-			labelImageNr=QtGui.QLabel(str(image))
-			# alpha slider
-			labelAlpha=QtGui.QLabel(str("alpha"))
-			self.slidersAlpha.append(QtGui.QSlider(QtCore.Qt.Horizontal, self))
-			#sliderAlpha.setGeometry(10, 10, 20, 20)
-			self.slidersAlpha[image].setMinimum(0)
-			self.slidersAlpha[image].setMaximum(100)
-			self.slidersAlpha[image].setTickInterval(1)
-			#sliderAlpha.setSingleStep(1)
-			self.labelsAlphaValue.append(QtGui.QLabel("%.2f" % 0.0))
-			# checkbox to visualize image at all?
-			#labelShowImg=QtGui.QLabel(str("show"))
-			checkboxShowImg = QtGui.QCheckBox()
-
-			self.perImgLayout[image].addWidget(labelImageNr)
-			#oneImgBox.addStretch(1)
-			self.perImgLayout[image].addWidget(labelAlpha)
-			self.perImgLayout[image].addWidget(self.slidersAlpha[image])
-			self.perImgLayout[image].addWidget(self.labelsAlphaValue[image])
-			self.perImgLayout[image].addWidget(checkboxShowImg)
-
-			# connections
-			# - alpha changed
-			def sliderAlphaValueChanged(value,index):
-				alpha = float(value)/100.0
-				print "value type ",type(value),alpha
-				self.labelsAlphaValue[index].setText("%.2f" % alpha)
-				# therese is more to do
-				# TODO
-			self.slidersAlpha[image].valueChanged.connect(functools.partial(sliderAlphaValueChanged,index=image))
-
-
-			self.rightImgBox.addLayout(self.perImgLayout[image])
-		self.rightImgBox.addStretch(1)
-		"""
-
-
-
+		
 
 
 		# image type and channel
@@ -413,7 +365,7 @@ class ClickImageView(pg.ImageView):
 			if self.labelPaintImage is not None:
 
 				whereNoLabels = numpy.where(self.imageItemLabels.labelImage == 0 )
-				print whereNoLabels
+				#print whereNoLabels
 				self.labelPaintImage[:,:,3]=self.alpha*255.0
 				self.labelPaintImage[whereNoLabels[0],whereNoLabels[1],3]=0.0
 				self.imageItemLabels.updateImage()
@@ -496,7 +448,7 @@ class ClickImageView(pg.ImageView):
 				self.imageItemLabels.drawKernel[x,y,:]=self.labelColors[self.currentLabel,:]
 
 	def keyPressEvent(self, ev):
-		print ev.key()
+		#print ev.key()
 
 		if ev.key()  == QtCore.Qt.Key_U:
 			#print "update dependentNodes"
