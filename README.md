@@ -51,9 +51,7 @@ Version
     - batch mode image selector combo box is working
 
 - 0.0.6.8
-    - viewer will autoselect "channel wise" - mode if image
-      has not dim==3 and ( shape[2]==3 or shape[2]==4)
-    - removed prints
+    - viewer will autoselect best mode for image 
 
 - 0.0.6.7
     - experimental region features (dummy,does not work so far)
