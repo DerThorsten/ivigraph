@@ -7,7 +7,7 @@ ivigraph and interactive version of vigranumpy with a labView-ish gui for image 
 Quickstart:
 ============
 run flow.py and change the "lena" path to an image of your choise.
-Cick on Flowchart-Button in the GUI and edit the graph 
+Cick on Flowchart-DockArea (flowchart itself might be hidden) in the GUI and edit the graph 
 
 - right click to add new operators 
 - del to remove connections  unknown bug, this might lead to a floating point error for huge graphs
