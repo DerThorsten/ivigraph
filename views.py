@@ -253,6 +253,7 @@ class ClickImageView(pg.ImageView):
 		self.sliderChannels.setTickInterval(1)
 		self.sliderChannels.setSingleStep(1)
 		self.sliderChannels.setValue(0)
+		self.sliderChannels.setTickPosition(QtGui.QSlider.TicksAbove)
 		self.labelCurrentChannel=QtGui.QLabel(str(self.sliderChannels.sliderPosition()))
 
 		self.imgCtrBox.addWidget(self.comboBoxImageType)
@@ -329,6 +330,7 @@ class ClickImageView(pg.ImageView):
 
 
 		# - image type changed
+		"""
 		def comboBoxImageTypeChanged(index):
 			self.imageType = self.comboBoxImageType.currentText()
 			if self.imageType in ('Rgb','Lab'):
@@ -344,8 +346,9 @@ class ClickImageView(pg.ImageView):
 				self.sliderLabels.setEnabled(True)
 			if (self.srcImage is not None):
 				self.mySetImage(self.srcImage)
-		comboBoxImageTypeChanged(0)
-		self.comboBoxImageType.currentIndexChanged.connect(comboBoxImageTypeChanged)   
+		"""
+		self.comboBoxImageTypeChanged(0)
+		self.comboBoxImageType.currentIndexChanged.connect(self.comboBoxImageTypeChanged)   
 
 		# - channel changed
 		def sliderChannelValueChanged(value):
@@ -419,6 +422,24 @@ class ClickImageView(pg.ImageView):
 		self.sliderAlpha.valueChanged.connect(sliderAlphaValueChanged) 
 		sliderAlphaValueChanged(50)
 
+			# - image type changed
+	def comboBoxImageTypeChanged(self,index,callSetImg=True):
+			self.comboBoxImageType.setCurrentIndex(index)
+			self.imageType = self.comboBoxImageType.currentText()
+			if self.imageType in ('Rgb','Lab'):
+				self.channelSliderChannelDesc.setEnabled(False)
+				self.labelCurrentChannel.setEnabled(False)
+				self.sliderChannels.setValue(0)
+				self.labelCurrentChannel.setText('0')
+				self.currentChannel =  0
+				self.sliderLabels.setEnabled(False)
+			elif self.imageType == '1-Channel':
+				self.channelSliderChannelDesc.setEnabled(True)
+				self.labelCurrentChannel.setEnabled(True)
+				self.sliderLabels.setEnabled(True)
+			if (self.srcImage is not None and callSetImg):
+				self.mySetImage(self.srcImage)
+		
 
 	def mySetImage(self,image):
 		self.srcImage = image
@@ -439,6 +460,8 @@ class ClickImageView(pg.ImageView):
 				self.labelPaintImage  			  = numpy.zeros(imgShape+(4,))
 				self.imageItemLabels.updateImage(self.labelPaintImage)
 
+		if (image.ndim!=3 or (image.shape[2]!=3 and image.shape[2]!=4 ) ):
+			self.comboBoxImageTypeChanged(2,callSetImg=False)
 
 		if image.ndim == 2 :
 			self.currentNumberOfChannels = 0

@@ -292,7 +292,7 @@ class MyCtrlNode(CtrlNode):
         return return_value
 
 
-def numpyInNumpyOutNode(nodeName,uiTemplate,f,dtypeIn=np.float32,dtypeOut=np.float32,doChannelWise=False,nodeSize=(100,100)):
+def numpyInNumpyOutNode(nodeName,uiTemplate,f,dtypeIn=np.float32,dtypeOut=np.float32,doChannelWise=False,nodeSize=(100,100),tensor=False):
     name = nodeName
     uiT  = uiTemplate
     kwargs = {}
@@ -342,16 +342,27 @@ def numpyInNumpyOutNode(nodeName,uiTemplate,f,dtypeIn=np.float32,dtypeOut=np.flo
             dataInVigra = np.squeeze(dataInVigra)
             
 
+
             if doChannelWise == False or dataInVigra.ndim==2 or dataInVigra.shape[2]==1:
                 #print "Single Input  ",dataInVigra.shape,dataInVigra.dtype
                 vigraResult = f(dataInVigra,**kwargs)
-            else:
-
+            elif tensor == False:
                 numChannels = dataInVigra.shape[2]
                 vigraResult  = np.ones( dataInVigra.shape,dtype=dtypeIn)
                 for c in range(numChannels):
                     #print "channel wise input :",dataInVigra[:,:,c].shape,dataInVigra[:,:,c].dtype
                     vigraResult[:,:,c]=f(dataInVigra[:,:,c],**kwargs)
+            else :
+                numChannels = dataInVigra.shape[2]
+                r  = []
+                for c in range(numChannels):
+                    #print "channel wise input :",dataInVigra[:,:,c].shape,dataInVigra[:,:,c].dtype
+                    r.append( f(dataInVigra[:,:,c],**kwargs) )
+
+                vigraResult=np.concatenate(r,axis=2)
+
+
+
             vigraResult = np.squeeze(vigraResult)
             vigraResult = np.require(vigraResult,dtype=dtypeOut)
 

@@ -27,7 +27,9 @@ def _tensorEigenvalues(tensor,sortEigenValues,eigenvalue=0):
 node = numpyInNumpyOutNode(
     nodeName="BoundaryTensor",
     uiTemplate=[('scale',          'spin', {'value': 1.50, 'step': 0.25, 'range': [0.01, None]})],
-    f=vigra.filters.boundaryTensor2D
+    f=vigra.filters.boundaryTensor2D,
+    doChannelWise=True,
+    tensor=True
 )
 fclib.registerNodeType(node,[('Image-Tensors',)])
 
