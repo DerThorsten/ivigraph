@@ -55,7 +55,10 @@ class ImageSelector(QtGui.QWidget):
         layoutB.addWidget(self.nextImgButton)
 
 
+        def comboBoxInputSelectorChanged(index):
+            self.setCurrentIndex(index)
 
+        self.comboBoxInputSelector.currentIndexChanged.connect(comboBoxInputSelectorChanged)
 
 
         def buttonNextImg():
@@ -78,11 +81,15 @@ class ImageSelector(QtGui.QWidget):
         self.ivigraph._updateInput(self.currentIndex)
 
     def setBatchInputNames(self,ivigraph,batchInputNames):
+        names = []
+        for i,bn in enumerate(batchInputNames):
+            names.append("Img %s:    %s"%(str(i).zfill(3),bn) )
+
         self.ivigraph = ivigraph
         self.numInput   = len(batchInputNames)
         self.batchInputNames = batchInputNames
         self.comboBoxInputSelector.clear()
-        self.comboBoxInputSelector.addItems(self.batchInputNames)
+        self.comboBoxInputSelector.addItems(names)
 
 
 

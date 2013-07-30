@@ -47,6 +47,9 @@ Authors
 Version
 =============
 
+- 0.0.6.9
+    - batch mode image selector combo box is working
+
 - 0.0.6.8
     - viewer will autoselect "channel wise" - mode if image
       has not dim==3 and ( shape[2]==3 or shape[2]==4)
