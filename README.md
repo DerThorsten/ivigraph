@@ -10,8 +10,8 @@ run flow.py and change the "lena" path to an image of your choise.
 Cick on Flowchart-DockArea (flowchart itself might be hidden) in the GUI and edit the graph 
 
 - right click to add new operators 
-- del to remove connections  unknown bug, this might lead to a floating point error for huge graphs
-- connect operator to one of the four image viewers
+- press "del" to remove connections and nodes
+- connect operator to one of the 4 image viewers
 
 
 Dependencies:
