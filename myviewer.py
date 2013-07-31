@@ -132,6 +132,9 @@ class LayerdViewer(QtGui.QWidget):
     def show(self):
         self.win.show()
 
+    def update(self):
+        assert False
+
 
 
 
