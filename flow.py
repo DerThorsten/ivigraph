@@ -37,7 +37,7 @@ else :
 fc=ivigraph.flowChart
 viewerNodes=ivigraph.viewerNodes
 # custom connections
-fNode = fc.createNode('BoundaryTensor', pos=(0, 0))
+fNode = fc.createNode('NumpyRequire', pos=(0, 0))
 fc.connectTerminals(fc['dataIn'], fNode['dataIn'])
 fc.connectTerminals(fc['dataIn'], viewerNodes[0]['data'])
 #fc.connectTerminals(v1Node['view'], fNode['view'])

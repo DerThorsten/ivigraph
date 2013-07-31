@@ -21,6 +21,27 @@ from pyqtgraph.parametertree import Parameter, ParameterTree, ParameterItem, reg
 
 
 
+class Opts(object):
+    @staticmethod
+    def dtypeOpt(optName='dtype',default=np.float32):
+        dtypeOpt = {'name': optName, 'type': 'list', 'values': 
+            {
+                    "float32" : np.float32,
+                    "float64" : np.float64,
+                    "uint8" : np.uint8,
+                    "uint16" : np.uint16,
+                    "uint32" : np.uint32,
+                    "uint64" : np.uint64,
+                    "int8"   : np.int8,
+                    "int16" : np.int16,
+                    "int32" : np.int32,
+                    "int64" : np.int64,
+                    "bool" : np.bool
+            }, 'value': default
+        }
+        return dtypeOpt
+
+
 
 class Found(Exception): pass
 
@@ -28,16 +49,23 @@ class AdvCtrlNode(Node):
     """Abstract class for nodes with auto-generated control UI"""
     
     sigStateChanged = QtCore.Signal(object)
-    def __init__(self, name, ui=None, terminals=None):
+    def __init__(self, name, userUi, terminals=None):
 
-        Node.__init__(self, name=name, terminals=terminals)
-        
+        Node.__init__(self, name=name, terminals=terminals,)
         
 
-        #self.widget = QtGui.QWidget()
-        #l = QtGui.QVBoxLayout()
-        #l.setSpacing(0)
-        #self.widget.setLayout(l)
+        nodeOpt = {'name': 'NodeOptions', 'type': 'group','expanded':False, 'children': userUi}
+
+        updateOpts = {'name': 'UpdateOptions','expanded':False, 'type': 'group', 'children': [   
+
+            {'name': 'autoUpdate',       'type': 'bool',     'value':  True},
+            {'name': 'update', 'type': 'action'},
+        ]}
+
+
+
+        ui = [nodeOpt,updateOpts]
+        
 
 
         self.param = Parameter.create(name='params', type='group', children=ui)
@@ -45,9 +73,6 @@ class AdvCtrlNode(Node):
         self.uiTree = ParameterTree()
         self.uiTree.setParameters(self.param , showTop=False)
 
-        self.uiTree.setMinimumSize(1,350)
-
-        #l.addWidget(self.uiTree)
 
 
         self.param.sigTreeStateChanged.connect(self.changedTree)
@@ -56,30 +81,43 @@ class AdvCtrlNode(Node):
         return self.uiTree
        
     def changedTree(self,param,changes):
+        """
+        if *anything* changes in parameter tree
+        this method will be called
+        """
 
-        print("tree changes:")
+        autoUpdate = self.getParamValue('UpdateOptions','autoUpdate')
+        #print("tree changes:",len(changes))
+        nChanges = len(changes)
         for param, change, data in changes:
             path = self.param.childPath(param)
-            if path is not None:
-                childName = '.'.join(path)
-            else:
-                childName = param.name()
-            print('  parameter: %s'% childName)
-            print('  change:    %s'% change)
-            print('  data:      %s'% str(data))
-            print('  ----------')
 
-            if change == 'activated':
-                self.onActionButtonPress(path)
+            if nChanges ==1 and path == ['UpdateOptions','autoUpdate'] :
                 return
 
+
+            if path==['UpdateOptions','update']:
+                self.onUpdateOptionsUpdatePress()
+                return
+
+            #print('path',path)
+            #print('  change:    %s'% change)
+            if change == 'activated':
+                if nChanges != 1 : 
+                    raise RuntimeError('internal error')
+                self.onActionButtonPress(path)
+                return
+        if autoUpdate:
+            self.changed()
+    
+    def onUpdateOptionsUpdatePress(self):
         self.changed()
-        
 
     def onActionButtonPress(self,actionPath):
-        pass#print "onActionButtonPress",actionPath
+        print "onActionButtonPress",actionPath
 
     def changed(self):  
+        #print "changed !"
         self.update()
         self.sigStateChanged.emit(self)
 
@@ -109,89 +147,14 @@ class AdvCtrlNode(Node):
         return return_value
 
 
-    def getParamValue(self,names):
-        depth = len(names)
-        print "get values "
+    def getParamValue(self,*names):
+        #print "childs"
+        #for c in self.param.children():
+        #    print c.name()
 
 
-
-        if depth == 1 : 
-            return self.param.getValues()[names[0]][0]
-
-        if depth >= 2 :
-
-
-            current  = None
-            currentP = None
-
-            cp  = self.param
-
-            #print "startname ",cp.name()
-
-            counter=0
-            while(True):
-                #print "while loop enter name ",cp.name(),counter
-
-
-                if cp.name()==names[len(names)-1]:
-                    #print "\n\n\nLAST NAME MATCH"
-                    pass
-                try :
-                    for d,name in enumerate(names[counter:len(names)]):
-                        doBreak=False
-                        #print "d,name",d,name
-                        childs =  cp.children()
-                        #print " \n ITERATE CHILDS \n"
-                        for ci,c in enumerate(childs) :
-
-                            cName = c.name()
-                            #print "cname",cName
-                            if cName == name :
-                                #print "names match"
-                                
-                                cpOld=cp
-                                cp=c
-                               
-
-
-                                #print "____counter",counter
-                                #print "____current",cp
-                               #print "____currentPara",cp.getValues()
-
-                                if counter == depth -1:
-                                    #print "in depth -1  ci",ci
-                                    #print "try in old" ,type(cpOld.getValues())," len ",len(cpOld.getValues())
-                                    #print "try in old2" ,cpOld.getValues()[cName][0]
-                                    return cpOld.getValues()[cName][0]
-                   
-                                counter+=1
-
-                                raise Found
-
-                            else :
-                                #print "names do not match"
-                                continue
-
-                            #print "name", c.name()
-                            #print "get values",c.getValues()
-                
-                except Found:
-                    #print "\n\n\n FOund"
-                    pass
-
-                #print "counter",counter
-                #print "current",cp
-                #print "currentPara",cp.getValues()
-                if counter == depth:
-                    #print "finished??!?"
-                    break
-
-               
-
-
-
-            return current[0]
-
+        param=self.param.param(*names)
+        return param.value()
 
     """
     def saveState(self):

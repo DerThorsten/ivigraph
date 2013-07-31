@@ -3,7 +3,7 @@ import vigra
 import math
 from collections import OrderedDict
 
-from node_base import AdvCtrlNode,convertNh, MyNode,MyCtrlNode,numpyInNumpyOutNode
+from node_base import Opts,AdvCtrlNode,convertNh, MyNode,MyCtrlNode,numpyInNumpyOutNode
 import pyqtgraph.flowchart.library as fclib
 
 
@@ -55,7 +55,7 @@ class TestNode(AdvCtrlNode):
         ]}
 
 
-        dtypeOpt = {'name': 'explicit dtype', 'type': 'list', 'values': 
+        dtypeOpt = {'name': 'dtype', 'type': 'list', 'values': 
             {
                     "float32" : np.float32,
                     "float64" : np.float64,
@@ -143,21 +143,6 @@ fclib.registerNodeType(TestNode, [('Tests',)])
 #
 ###################################################
 
-_numpyDtypes= [
-    np.float32,
-    np.float64,
-    np.uint8,
-    np.uint16,
-    np.uint32,
-    np.uint64,
-    np.int8,
-    np.int16,
-    np.int32,
-    np.int64,
-    np.bool
-]
-
-_numpyDtypeStrs = [ str(d) for d in _numpyDtypes]
 
 
 _stringedBooleanOperators = {
@@ -169,22 +154,23 @@ _stringedBooleanOperators = {
     '>='    : '__ge__' 
 }
 
-class NumpyRequire(MyCtrlNode):
+class NumpyRequire(AdvCtrlNode):
     """ blend images (weighted), normalize, if neccessary """
-    nodeName = "numpy.require"
-    uiTemplate = [
-        ('dtype', 'combo', {'values': _numpyDtypeStrs})
-    ]
+    nodeName = "NumpyRequire"
     def __init__(self, name):
         terminals = {
             'dataIn': dict(io='in'),
             'dataOut': dict(io='out')
         }
-        MyCtrlNode.__init__(self, name, terminals=terminals)
+        params=Opts.dtypeOpt(optName='dtype')
+
+        AdvCtrlNode.__init__(self, name="NumpyRequire",userUi=[params], terminals=terminals)
     def execute(self, dataIn, display=True):
 
+        dtype = self.getParamValue('NodeOptions','dtype')
+
         return { 'dataOut': 
-            np.require(dataIn,dtype=_numpyDtypes[  self.ctrls['dtype'].currentIndex()   ])
+            np.require(dataIn,dtype=dtype)
         }
 
 fclib.registerNodeType(NumpyRequire, [('Numpy',)])

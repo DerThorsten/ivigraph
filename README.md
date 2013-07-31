@@ -46,6 +46,9 @@ Authors
 
 Version
 =============
+- 0.0.6.11
+    - new node gui is intruduced in the first real node (numpy require node as first usecase)
+
 - 0.0.6.10
     - fixed tensor nodes a bit ( some of them work with colorchannel images now)
 
