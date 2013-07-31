@@ -165,6 +165,8 @@ class NumpyRequire(AdvCtrlNode):
         params=Opts.dtypeOpt(optName='dtype')
 
         AdvCtrlNode.__init__(self, name="NumpyRequire",userUi=[params], terminals=terminals)
+
+        
     def execute(self, dataIn, display=True):
 
         dtype = self.getParamValue('NodeOptions','dtype')

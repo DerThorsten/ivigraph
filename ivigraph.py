@@ -106,7 +106,7 @@ class IViGrahp(QtGui.QWidget):
         self.win.setCentralWidget(self)
         self.win.resize(1000,500)
 
-        # ui widgets
+       # ui widgets
         self.mylayout = QtGui.QVBoxLayout(self)
         self.dockArea = DockArea(self)
         self.layout().addWidget(self.dockArea)

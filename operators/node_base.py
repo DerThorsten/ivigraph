@@ -41,6 +41,10 @@ class Opts(object):
         }
         return dtypeOpt
 
+    @staticmethod
+    def colormap(optName='colormap'):
+        return {'name': optName, 'type': 'colormap','autoIncrementName':True}
+
 
 
 class Found(Exception): pass
@@ -49,12 +53,13 @@ class AdvCtrlNode(Node):
     """Abstract class for nodes with auto-generated control UI"""
     
     sigStateChanged = QtCore.Signal(object)
-    def __init__(self, name, userUi, terminals=None):
-
-        Node.__init__(self, name=name, terminals=terminals,)
+    def __init__(self, name, userUi, terminals=None,size=(100,100),allowAddInput=False):
+        self.size=size
+        
+        
         
 
-        nodeOpt = {'name': 'NodeOptions', 'type': 'group','expanded':False, 'children': userUi}
+        self.nodeOpt = {'name': 'NodeOptions', 'type': 'group','expanded':False, 'children': userUi}
 
         updateOpts = {'name': 'UpdateOptions','expanded':False, 'type': 'group', 'children': [   
 
@@ -64,7 +69,7 @@ class AdvCtrlNode(Node):
 
 
 
-        ui = [nodeOpt,updateOpts]
+        ui = [self.nodeOpt,updateOpts]
         
 
 
@@ -76,7 +81,7 @@ class AdvCtrlNode(Node):
 
 
         self.param.sigTreeStateChanged.connect(self.changedTree)
-    
+        Node.__init__(self, name=name, terminals=terminals,allowAddInput=allowAddInput)
     def ctrlWidget(self):
         return self.uiTree
        
@@ -129,12 +134,12 @@ class AdvCtrlNode(Node):
         t = t1-self.t0
         print colored('Done ', 'blue'),colored("%f sek"%float(t),'green')
 
-    """
+
     def graphicsItem(self):
         if self._graphicsItem is None:
-            self._graphicsItem = CustomNodeGraphicsItem(self,(200,200))
+            self._graphicsItem = CustomNodeGraphicsItem(self,self.size)
         return self._graphicsItem
-    """
+
 
     def execute(self, *args, **kwargs):
         pass

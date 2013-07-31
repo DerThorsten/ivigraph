@@ -3,9 +3,13 @@ import vigra
 import math
 from collections import OrderedDict
 
-from node_base import MyNode,MyCtrlNode,numpyInNumpyOutNode
+from node_base import Opts,AdvCtrlNode,MyNode,MyCtrlNode,numpyInNumpyOutNode
 import pyqtgraph.flowchart.library as fclib
 from normalize import _normalize
+
+
+
+
 
 
 
@@ -16,6 +20,101 @@ from normalize import _normalize
 #   CHANNELS
 #
 ###################################################
+
+class NewBlender(AdvCtrlNode):
+    """ blend images (weighted), normalize, if neccessary """
+    nodeName = "NewBlender"
+    def __init__(self, name):
+
+
+
+        terminals = OrderedDict()
+        terminals['dataIn']=dict(io='in')
+        terminals['dataOut']=dict(io='out')
+
+        params=Opts.dtypeOpt(optName='dtype')
+
+
+        self.termNameToCmPath={
+            'dataIn':['NodeOptions','cmap']
+        }
+
+
+        AdvCtrlNode.__init__(self, name,userUi=[params], 
+                            terminals=terminals,allowAddInput=True)
+
+        cmap = Opts.colormap('cmap')
+        self.param.param('NodeOptions').addChild(cmap).name()
+
+
+    def addInput(self, name="Input", **args):
+        print "add terminal"
+
+
+        newCm = Opts.colormap('cmap_')
+        newName = self.param.param('NodeOptions').addChild(newCm).name()
+
+
+        r = self.addTerminal(name, io='in', **args)
+        termName  =  r.name() 
+
+        self.termNameToCmPath[termName]=['NodeOptions',newName]
+
+        print self.termNameToCmPath
+
+        return r
+        
+    def addOutput(self, name="Output", **args):
+        print "add output"
+        return self.addTerminal(name, io='out', **args)
+        
+    def removeTerminal(self, term):
+        print "remove terminal"
+        if isinstance(term, Terminal):
+            name = term.name()
+        else:
+            name = term
+            term = self.terminals[name]
+        
+        #print "remove", name
+        #term.disconnectAll()
+        term.close()
+        del self.terminals[name]
+        if name in self._inputs:
+            del self._inputs[name]
+        if name in self._outputs:
+            del self._outputs[name]
+        self.graphicsItem().updateTerminals()
+        self.sigTerminalRemoved.emit(self, term)
+        
+        
+    def execute(self,**kwargs):
+
+        cmap =  self.getParamValue('NodeOptions','cmap') 
+        res  =  cmap.map(_normalize(kwargs['dataIn'],0.0,1.0))
+
+
+        scalarImg = []
+
+        for termName in self.terminals.keys():
+            term = self.terminals[termName]
+            if termName in self._inputs:
+                inputData  =  kwargs[termName]
+                if inputData is not None:
+
+
+                    cmapPath = self.termNameToCmPath[termName]
+                    cmap     = self.getParamValue(*cmapPath)
+                    print "inputDataShape",termName,cmap
+
+
+        return { 'dataOut': 
+            res
+        }
+
+
+fclib.registerNodeType(NewBlender, [('Image-Channels',)])
+
 class ChannelStacker(MyNode):
     """ stack channels of all input(s) """
     nodeName = "ChannelStacker"
