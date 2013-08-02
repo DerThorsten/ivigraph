@@ -6,6 +6,49 @@ import vigra
 
 
 
+
+class LayerBase(QtGui.QWidget):
+    def __init__(self):
+        pass
+
+
+    def inputToRGBA(**kwargs):
+        pass
+
+
+
+
+class LayerBase(object):
+    pass
+
+class ImageLayerBase(LayerBase):
+    pass
+
+
+class RgbLayer(ImageLayerBase):
+    pass
+
+class MultiRgbLayer(ImageLayerBase):
+    pass
+
+class GrayLayer(ImageLayerBase):
+    pass
+
+class MultiGrayLayer(ImageLayerBase):
+    pass
+
+
+
+
+
+
+
+
+
+
+
+
+
 sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding,
                                          QtGui.QSizePolicy.Expanding)
 sizePolicy.setHorizontalStretch(0)
@@ -38,22 +81,28 @@ class Layer(object):
             self.layoutR2 = QtGui.QHBoxLayout()
             self.layoutR3 = QtGui.QHBoxLayout()
 
-            self.nameLabel = QtGui.QLabel('\n'+parent.name)
-            self.layout.addWidget(self.nameLabel)
+            
+            #self.layout.addWidget(self.nameLabel)
             self.layout.addLayout(self.layoutR1)
             self.layout.addLayout(self.layoutR2)
-            self.layout.addLayout(self.layoutR3)
+            #self.layout.addLayout(self.layoutR3)
 
             self.setupLayoutR1()
             self.setupLayoutR2()
-            self.setupLayoutR3()
+            #self.setupLayoutR3()
 
         def setupLayoutR1(self):
+            name = str(self.parent.layerdViewer.numLayers())
+            self.nameLabel = QtGui.QLabel(name)
             self.comboBoxImageType = QtGui.QComboBox()
-            self.comboBoxImageType.addItems(['Rgb','Lab','1C'])
+            self.comboBoxImageType.addItems(['Rgb','Lab','C'])
             self.channelSliderChannelDesc=QtGui.QLabel("C:")
             self.sliderChannels = QtGui.QSlider(QtCore.Qt.Horizontal)
-            setPolicy(self.sliderChannels,QtGui.QSizePolicy.MinimumExpanding)
+
+            self.sliderChannels.setMinimumSize(30,10)
+            setPolicy(self.sliderChannels,QtGui.QSizePolicy.Maximum)
+
+
             self.sliderChannels.setMinimum(0)
             self.sliderChannels.setMaximum(10)
             self.sliderChannels.setTickInterval(1)
@@ -62,25 +111,30 @@ class Layer(object):
             self.sliderChannels.setTickPosition(QtGui.QSlider.TicksAbove)
             self.labelCurrentChannel=QtGui.QLabel(str(self.sliderChannels.sliderPosition()))
 
+            self.layoutR1.addWidget(self.nameLabel)
             self.layoutR1.addWidget(self.comboBoxImageType)
             self.layoutR1.addWidget(self.channelSliderChannelDesc)
             self.layoutR1.addWidget(self.sliderChannels)
             self.layoutR1.addWidget(self.labelCurrentChannel)
-
+            #self.layoutR1.addStretch(1)
         def setupLayoutR2(self):
+
+            #self.labelColormapDesc=QtGui.QLabel("CMap:")
             self.colormap  = pg.GradientWidget()
-            
-            setPolicy(self.colormap)
+            #self.colormap.setMinimumSize(50,10)
+            self.colormap.setMaximumSize(70,7)
+            setPolicy(self.colormap,QtGui.QSizePolicy.Maximum)
             self.colormap.setLength(5)
             self.colormap.update()
+            #self.layoutR2.addWidget(self.labelColormapDesc)
             self.layoutR2.addWidget(self.colormap)
+            #self.layoutR2.addStretch(1)
 
-
-        def setupLayoutR3(self):
-            self.labelAlphaDesc=QtGui.QLabel("Alpha:")
+        #def setupLayoutR3(self):
+            self.labelAlphaDesc=QtGui.QLabel("A:")
             self.sliderAlpha = QtGui.QSlider(QtCore.Qt.Horizontal)
-            setPolicy(self.sliderAlpha,QtGui.QSizePolicy.MinimumExpanding)
-            self.sliderAlpha.setGeometry(10, 10, 20, 30)
+            setPolicy(self.sliderAlpha,QtGui.QSizePolicy.Maximum)
+            self.sliderAlpha.setMinimumSize(30,10)
             self.sliderAlpha.setMinimum(0)
             self.sliderAlpha.setMaximum(100)
             self.sliderAlpha.setTickInterval(1)
@@ -90,16 +144,19 @@ class Layer(object):
 
 
 
-            self.layoutR3.addWidget(self.labelAlphaDesc)
-            self.layoutR3.addWidget(self.sliderAlpha)
-            self.layoutR3.addWidget(self.labelAlpha)
-
+            self.layoutR2.addWidget(self.labelAlphaDesc)
+            self.layoutR2.addWidget(self.sliderAlpha)
+            self.layoutR2.addWidget(self.labelAlpha)
+            #self.layoutR3.addStretch(1)
             # connections
             self.sliderAlpha.valueChanged.connect(self.parent.onAlphaChanged) 
 
      
         def initialzie(self):
-            self.parent.onAlphaChanged(25)
+            if self.parent.layerdViewer.numLayers()<=0:
+                self.parent.onAlphaChanged(100)
+            else :
+                self.parent.onAlphaChanged(25)
 
     def onAlphaChanged(self,value):
         self.ui.sliderAlpha.setValue(value)
@@ -110,9 +167,10 @@ class Layer(object):
         self.processInputData()
 
 
-    def __init__(self,name,imageItem=None):
+    def __init__(self,name,layerdViewer,imageItem=None):
 
         # name of the layer 
+        self.layerdViewer   = layerdViewer
         self.name           = name
         # image item (item will be added to external view box)
         self.imageItem=imageItem
@@ -147,9 +205,9 @@ class LayerdViewer(QtGui.QWidget):
 
     def setuptMainLayouts(self):
         # ui widgets
-        self.mainVLayout = QtGui.QVBoxLayout(self)
-        self.viewAndRightLayout= QtGui.QHBoxLayout()
-        self.belowViewLayout= QtGui.QHBoxLayout()
+        self.mainVLayout            = QtGui.QVBoxLayout(self)
+        self.viewAndRightLayout     = QtGui.QHBoxLayout()
+        self.belowViewLayout        = QtGui.QHBoxLayout()
         
 
 
@@ -189,10 +247,9 @@ class LayerdViewer(QtGui.QWidget):
         
         self.viewAndRightLayout.addWidget(self.graphView)
 
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding,
-                                                 QtGui.QSizePolicy.MinimumExpanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
+        setPolicy(self.graphView,QtGui.QSizePolicy.Expanding)
+
+
         self.graphView.setSizePolicy(sizePolicy)
 
         # view box
@@ -213,9 +270,12 @@ class LayerdViewer(QtGui.QWidget):
 
         self.layers = OrderedDict()
 
+    def numLayers(self):
+        print "nl ",len(self.layers)
+        return len(self.layers)
 
     def addLayer(self,name):
-        layer = Layer(name=name)
+        layer = Layer(name=name,layerdViewer=self)
         self.layers[name]=layer
         self.viewBox.addItem(layer.imageItem)
         self.addLayerGui(name)
@@ -272,9 +332,17 @@ viewer.addLayer('data1')
 viewer.setLayerData('data1',data1)
 
 
-data2 = vigra.readImage('/home/tbeier/Desktop/lena.bmp')[:,:,2]
+data2 = vigra.readImage('/home/tbeier/Desktop/lena.bmp')[:,:,0]
 viewer.addLayer('data2')
 viewer.setLayerData('data2',data2)
+
+data3 = vigra.readImage('/home/tbeier/Desktop/lena.bmp')[:,:,1]
+viewer.addLayer('data3')
+viewer.setLayerData('data3',data3)
+
+data4 = vigra.readImage('/home/tbeier/Desktop/lena.bmp')[:,:,2]
+viewer.addLayer('data4')
+viewer.setLayerData('data4',data4)
 
 #viewer.removeLayer('data2')
 
