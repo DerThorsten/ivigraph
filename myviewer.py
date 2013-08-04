@@ -30,6 +30,11 @@ gray = vigra.filters.gaussianGradientMagnitude(rgbImg,1.5)
 viewer.addLayer(name='gray',layerType='GrayLayer')
 viewer.setLayerData(name='gray',data=gray)
 
+
+viewer.addLayer(name='mgray',layerType='MultiGrayLayer')
+viewer.setLayerData(name='mgray',data=rgbImg)
+
+
 viewer.autoRange()
 
 #viewer.removeLayer(name='rgb-1')
