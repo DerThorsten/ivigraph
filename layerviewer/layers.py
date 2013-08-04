@@ -15,12 +15,48 @@ class LayerBase(object):
         All items which are needed to display a certain LayerView
         are stored withn this base class
     """
-    def __init__(self,name,viewBox):
-        self.name             = name
+    def __init__(self,name,viewBox,layers):
+        self.name            = name
         self.viewBox        = viewBox
         self.layerParameter = None
         self.items          = set()
         self.data           = None
+        self.layers         = layers
+
+    def baseControlTemplate(self):
+        return [
+            {'name': 'ShowLayer', 'type': 'bool', 'value': True, 'tip': "Show / Hide This Layer"},
+            {'name': 'HideOthers', 'type': 'action'}
+        ]
+
+    def connectBaseControls(self):
+        param = self.layerParameter.param('ShowLayer')
+        param.sigTreeStateChanged.connect(self.onShowLayerChanged)
+
+        param = self.layerParameter.param('HideOthers')
+        param.sigTreeStateChanged.connect(self.onHideOthers)
+
+        self.connectControls()
+
+    def onHideOthers(self,param,changes):
+        #print self.name,"hide others"
+        self.layerParameter.param('ShowLayer').setValue(True)
+        for otherLayerName in self.layers.keys():
+            otherLayer = self.layers[otherLayerName]
+            if otherLayer!=self:
+                #otherLayer.hideItems()
+                otherLayer.layerParameter.param('ShowLayer').setValue(False)
+
+
+    def onShowLayerChanged(self,param,changes):
+        assert len(changes)==1
+        param,change,show = changes[0]
+
+        print self.name,"show",show
+        if show == True :
+            self.showItems()
+        else:
+            self.hideItems()
 
     def setLayerParameter(self,parameter):
         self.layerParameter=parameter
@@ -48,6 +84,16 @@ class LayerBase(object):
     def cleanUp(self):
         self.removeItems()
 
+    def hideItems(self):
+        for item in self.items:
+            item.hide()
+
+    def showItems(self):
+        for item in self.items:
+            print item
+            item.show()
+            item.update()
+
     @abstractmethod
     def checkData(self,data):
         pass
@@ -69,8 +115,8 @@ layerTypes=dict()
 class ImageRgbLayer(LayerBase):
 
 
-    def __init__(self,name,viewBox):
-        super(ImageRgbLayer,self).__init__(name,viewBox)
+    def __init__(self,name,viewBox,layers):
+        super(ImageRgbLayer,self).__init__(name,viewBox,layers)
         self.imageItem = pg.ImageItem()
         # add item to item(set)
         self.addItem(self.imageItem)
@@ -105,8 +151,8 @@ class ImageRgbLayer(LayerBase):
             opacity=self.getParamValue('Opacity')
 
         self.imageItem.setImage(self.preProcessedData,opacity=opacity)
-        self.imageItem.update()
-        self.viewBox.update()
+        #self.imageItem.update()
+        #self.viewBox.update()
 
     def controlTemplate(self):
         return [{'name': 'Opacity', 'type': 'float', 'value': 0.75, 'step': 0.1,'limits':[0,1]} ] 
@@ -122,11 +168,12 @@ class ImageRgbLayer(LayerBase):
         self.showData(opacity=opacity)
 
 
+
 class ImageGrayLayer(LayerBase):
 
 
-    def __init__(self,name,viewBox):
-        super(ImageGrayLayer,self).__init__(name,viewBox)
+    def __init__(self,name,viewBox,layers):
+        super(ImageGrayLayer,self).__init__(name,viewBox,layers)
         self.imageItem = pg.ImageItem()
         # add item to item(set)
         self.addItem(self.imageItem)
@@ -135,8 +182,11 @@ class ImageGrayLayer(LayerBase):
 
         self.arrowItem = pg.ArrowItem(pos=(50.5,90),parent=self.imageItem,pxMode=False)
         self.addItem(self.arrowItem)
+        #self.arrowItem.hide()
+        #self.arrowItem.show()
 
 
+        #Wprint "numitems",len(self.items)
     def checkData(self,data):
         error = RuntimeError("ImageGrayLayer data must have 2 dimensions or 3 dimensions with shape[2]=1")
         if data is None:
@@ -198,7 +248,7 @@ class ImageGrayLayer(LayerBase):
     def onOpacityChanged(self,param,changes):
         assert len(changes)==1
         #print "arrorw..."
-        #param,change,opacity = changes[0]
+        param,change,opacity = changes[0]
         #self.arrowItem.setStyle(headLen=int(5*opacity)+1,
         #   tipAngle=0, baseAngle=15, tailLen=10, tailWidth=3,pxMode=False
         #)
@@ -214,8 +264,8 @@ class ImageGrayLayer(LayerBase):
 class ImageMultiGrayLayer(LayerBase):
 
 
-    def __init__(self,name,viewBox):
-        super(ImageMultiGrayLayer,self).__init__(name,viewBox)
+    def __init__(self,name,viewBox,layers):
+        super(ImageMultiGrayLayer,self).__init__(name,viewBox,layers)
         self.imageItem = pg.ImageItem()
 
 

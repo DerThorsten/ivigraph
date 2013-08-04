@@ -23,9 +23,9 @@ def reusedSpaceCopy(old,new):
 
 
 
-def setupLayerParam(name,paramList):
+def setupLayerParam(name,baseParamList,paramList):
     basicParam = { 'name': name,'expanded':False, 'type': 'group',
-                        'autoIncrementName':True, 'children':paramList }
+                        'autoIncrementName':True, 'children':baseParamList+paramList }
     return basicParam
 
 
@@ -68,7 +68,8 @@ class LayerControlTree(QtGui.QWidget):
         self.hbox.addWidget(self.parameterTree)
 
     def addLayerControl(self,layer):
-        layerParam = setupLayerParam(layer.layerName(),layer.controlTemplate())
+        layerParam = setupLayerParam(layer.layerName(),layer.baseControlTemplate(),
+                                     layer.controlTemplate())
         layerParam = self.paramGroup.addChild(layerParam)
         # pass parameter to layer itself
         layer.setLayerParameter(layerParam)
@@ -157,15 +158,15 @@ class LayerViewer(QtGui.QWidget):
         # get the class of the layer
         layerClass  = layers.layerTypes[layerType]
         # construct the layer
-        layer = layerClass(name=name,viewBox=self.layerView.viewBox)
+        layer = layerClass(name=name,viewBox=self.layerView.viewBox,layers=self.layers)
 
         # add layer controll (this will setup the member/attribute
         # layer.layerParameter)
         self.layerControl.addLayerControl(layer)
 
         # connect the constrolls 
-        layer.connectControls()
-
+        #layer.connectControls()
+        layer.connectBaseControls()
         # add layer to layer dict
         self.layers[name]=layer
 
