@@ -106,7 +106,7 @@ class LayerView(QtGui.QWidget):
 
 
         # view box
-        self.viewBox = pg.ViewBox()
+        self.viewBox = pg.ViewBox()#parent=self)
         self.viewBox.setAspectLocked(True)
         # add view box to graph view layout
         self.graphViewLayout.addItem(self.viewBox,0,0)
@@ -116,7 +116,6 @@ class LayerView(QtGui.QWidget):
 
         # flip the view box
         self.viewBox.invertY(True)
-
 
 
 class LayerViewer(QtGui.QWidget):
@@ -154,11 +153,15 @@ class LayerViewer(QtGui.QWidget):
         # layers 
         self.layers = OrderedDict()
 
+
+        #if self.drawKernel is not None and ev.button() == QtCore.Qt.LeftButton:
+        #    self.drawAt(ev.pos(), ev)
+
     def addLayer(self,name,layerType):
         # get the class of the layer
         layerClass  = layers.layerTypes[layerType]
         # construct the layer
-        layer = layerClass(name=name,viewBox=self.layerView.viewBox,layers=self.layers)
+        layer = layerClass(name=name,layerViewer=self)
 
         # add layer controll (this will setup the member/attribute
         # layer.layerParameter)

@@ -7,21 +7,24 @@ from pyqtgraph.parametertree import Parameter, ParameterTree, ParameterItem, reg
 from helpers import setPolicy
 from abc import ABCMeta,abstractmethod
 
+from inputCheck import InputCheck
 
 class LayerBase(object):
-    __metaclass__ = ABCMeta
+    #__metaclass__ = ABCMeta
     """ Base Class for a Layer of LayerViewer:
         Holds all qt/pyqtgraph items
         All items which are needed to display a certain LayerView
         are stored withn this base class
     """
-    def __init__(self,name,viewBox,layers):
+    def __init__(self,name,layerViewer):
         self.name            = name
-        self.viewBox        = viewBox
+        self.viewBox        = layerViewer.layerView.viewBox
         self.layerParameter = None
         self.items          = set()
         self.data           = None
-        self.layers         = layers
+        self.layers         = layerViewer.layers
+        self.layerViewer    = layerViewer
+        self.layerView      = self.layerViewer.layerView
 
     def baseControlTemplate(self):
         return [
@@ -94,42 +97,57 @@ class LayerBase(object):
             item.show()
             item.update()
 
-    @abstractmethod
+ 
     def checkData(self,data):
-        pass
+        raise NotImplementedError("Needs to be implemted by subclas")
 
-    @abstractmethod
+
     def setData(self,data):
-        pass
+        raise NotImplementedError("Needs to be implemted by subclas")
 
-    @abstractmethod
+
     def controlTemplate(self):
-        pass
-    @abstractmethod
+        raise NotImplementedError("Needs to be implemted by subclas")
+
     def connectControls(self):
-        pass
+        raise NotImplementedError("Needs to be implemted by subclas")
+
+    def lala(self):
+        raise NotImplementedError("Needs to be implemted by subclas")
 
 
 layerTypes=dict()
 
-class ImageRgbLayer(LayerBase):
+class LayerImageItem(pg.ImageItem):
+    def __init__(self,*args,**kwargs):
+        super(LayerImageItem,self).__init__(*args,**kwargs)
+
+    def mouseClickEvent(self, ev):
+        print type(self)
+        print ev.pos()
+
+class ImageRgbLayer(LayerBase,LayerImageItem):
 
 
-    def __init__(self,name,viewBox,layers):
-        super(ImageRgbLayer,self).__init__(name,viewBox,layers)
-        self.imageItem = pg.ImageItem()
+    def __init__(self,name,layerViewer):
+
+        LayerBase.__init__(self,name,layerViewer)
+        LayerImageItem.__init__(self,parent=self.layerView)
+
+
+        #self.imageItem = pg.ImageItem(parent=self.layerView)
+
+
         # add item to item(set)
-        self.addItem(self.imageItem)
+        self.addItem(self)
         self.preProcessedData = None
 
+    def mouseClickEvent(self, ev):
+        print type(self)
+        print ev.pos()
+       
     def checkData(self,data):
-        if data is None:
-            return
-        if data.ndim!=3:
-            raise RuntimeError("ImageRgbLayer data must have 3 dimensions")
-
-        if data.shape[2]!=3 and data.shape[2]!=4:
-            raise RuntimeError("ImageRgbLayer data must have 3 or 4 channels")
+        InputCheck.colorImage(data)
 
     def setData(self,data=None):
         if data is None:
@@ -150,7 +168,7 @@ class ImageRgbLayer(LayerBase):
         if opacity is None:
             opacity=self.getParamValue('Opacity')
 
-        self.imageItem.setImage(self.preProcessedData,opacity=opacity)
+        self.setImage(self.preProcessedData,opacity=opacity)
         #self.imageItem.update()
         #self.viewBox.update()
 
@@ -167,21 +185,19 @@ class ImageRgbLayer(LayerBase):
         param,change,opacity = changes[0]
         self.showData(opacity=opacity)
 
+class ImageGrayLayer(LayerBase,LayerImageItem):
 
 
-class ImageGrayLayer(LayerBase):
-
-
-    def __init__(self,name,viewBox,layers):
-        super(ImageGrayLayer,self).__init__(name,viewBox,layers)
-        self.imageItem = pg.ImageItem()
+    def __init__(self,name,layerViewer):
+        LayerBase.__init__(self,name,layerViewer)
+        LayerImageItem.__init__(self,parent=self.layerView)
         # add item to item(set)
-        self.addItem(self.imageItem)
+        self.addItem(self)
         self.preProcessedData = None
         self.cmappedData      = None
 
-        self.arrowItem = pg.ArrowItem(pos=(50.5,90),parent=self.imageItem,pxMode=False)
-        self.addItem(self.arrowItem)
+        #self.arrowItem = pg.ArrowItem(pos=(50.5,90),parent=self.imageItem,pxMode=False)
+        #self.addItem(self.arrowItem)
         #self.arrowItem.hide()
         #self.arrowItem.show()
 
@@ -228,9 +244,9 @@ class ImageGrayLayer(LayerBase):
         if opacity is None:
             opacity=self.getParamValue('Opacity')
     
-        self.imageItem.setImage(self.cmappedData,opacity=opacity)
-        self.imageItem.update()
-        self.viewBox.update()
+        self.setImage(self.cmappedData,opacity=opacity)
+        #self.imageItem.update()
+        #self.viewBox.update()
 
     def controlTemplate(self):
         return [
@@ -260,17 +276,16 @@ class ImageGrayLayer(LayerBase):
         self.doColorMapping(cmap=cmap)
         self.showData()
 
+class ImageMultiGrayLayer(LayerBase,LayerImageItem):
 
-class ImageMultiGrayLayer(LayerBase):
 
-
-    def __init__(self,name,viewBox,layers):
-        super(ImageMultiGrayLayer,self).__init__(name,viewBox,layers)
-        self.imageItem = pg.ImageItem()
+    def __init__(self,name,layerViewer):
+        LayerBase.__init__(self,name,layerViewer)
+        LayerImageItem.__init__(self,parent=self.layerView)
 
 
         # add item to item(set)
-        self.addItem(self.imageItem)
+        self.addItem(self)
         
 
 
@@ -324,9 +339,9 @@ class ImageMultiGrayLayer(LayerBase):
         if opacity is None:
             opacity=self.getParamValue('Opacity')
     
-        self.imageItem.setImage(self.cmappedData,opacity=opacity)
-        self.imageItem.update()
-        self.viewBox.update()
+        self.setImage(self.cmappedData,opacity=opacity)
+        #self.imageItem.update()
+        #self.viewBox.update()
 
     def controlTemplate(self):
         return [
