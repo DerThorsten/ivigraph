@@ -8,6 +8,9 @@ from helpers import setPolicy
 from abc import ABCMeta,abstractmethod
 
 from inputCheck import InputCheck
+#from lazycall   import lazyCall
+from normalize import norm01
+
 
 class LayerBase(object):
     #__metaclass__ = ABCMeta
@@ -32,13 +35,16 @@ class LayerBase(object):
             {'name': 'HideOthers', 'type': 'action'}
         ]
 
+    def connectParam(self,namePath,f):
+        if isinstance(namePath,str):
+            namePath=[namePath]
+        param =  self.layerParameter.param(*namePath)
+        param.sigTreeStateChanged.connect(f)
+
     def connectBaseControls(self):
-        param = self.layerParameter.param('ShowLayer')
-        param.sigTreeStateChanged.connect(self.onShowLayerChanged)
-
-        param = self.layerParameter.param('HideOthers')
-        param.sigTreeStateChanged.connect(self.onHideOthers)
-
+        self.connectParam('ShowLayer' ,self.onShowLayerChanged)
+        self.connectParam('HideOthers',self.onHideOthers)
+        # must be implemented by child classes
         self.connectControls()
 
     def onHideOthers(self,param,changes):
@@ -54,8 +60,6 @@ class LayerBase(object):
     def onShowLayerChanged(self,param,changes):
         assert len(changes)==1
         param,change,show = changes[0]
-
-        print self.name,"show",show
         if show == True :
             self.showItems()
         else:
@@ -93,18 +97,16 @@ class LayerBase(object):
 
     def showItems(self):
         for item in self.items:
-            print item
+            # print item
             item.show()
-            item.update()
+            #item.update()
 
  
     def checkData(self,data):
         raise NotImplementedError("Needs to be implemted by subclas")
 
-
     def setData(self,data):
         raise NotImplementedError("Needs to be implemted by subclas")
-
 
     def controlTemplate(self):
         raise NotImplementedError("Needs to be implemted by subclas")
@@ -126,26 +128,14 @@ class LayerImageItem(pg.ImageItem):
         print type(self)
         print ev.pos()
 
-class ImageRgbLayer(LayerBase,LayerImageItem):
 
+class ImageRgbLayer(LayerImageItem,LayerBase):
 
     def __init__(self,name,layerViewer):
-
         LayerBase.__init__(self,name,layerViewer)
         LayerImageItem.__init__(self,parent=self.layerView)
-
-
-        #self.imageItem = pg.ImageItem(parent=self.layerView)
-
-
-        # add item to item(set)
         self.addItem(self)
-        self.preProcessedData = None
 
-    def mouseClickEvent(self, ev):
-        print type(self)
-        print ev.pos()
-       
     def checkData(self,data):
         InputCheck.colorImage(data)
 
@@ -155,37 +145,23 @@ class ImageRgbLayer(LayerBase,LayerImageItem):
             return 
         else:
             self.data=data
-            self.preProcessData()
-            self.showData()
-
-    def preProcessData(self):
-        """ rgb layer needs no preprocessing ?!?"""
-        self.preProcessedData=self.data
-
-    def showData(self,opacity=None):
-        """ this will make the data visible
-        """
-        if opacity is None:
-            opacity=self.getParamValue('Opacity')
-
-        self.setImage(self.preProcessedData,opacity=opacity)
-        #self.imageItem.update()
-        #self.viewBox.update()
+            self.setImage(self.data,opacity=self.getParamValue('Opacity'))
 
     def controlTemplate(self):
         return [{'name': 'Opacity', 'type': 'float', 'value': 0.75, 'step': 0.1,'limits':[0,1]} ] 
 
     def connectControls(self):
-        opacityParam = self.layerParameter.param('Opacity')
-        opacityParam.sigTreeStateChanged.connect(self.onOpacityChanged)
+
+        def onOpacityChanged(param,changes):
+            assert len(changes)==1
+            param,change,opacity = changes[0]
+            self.setImage(self.data,opacity=opacity)
+
+        self.connectParam('Opacity',onOpacityChanged)
 
 
-    def onOpacityChanged(self,param,changes):
-        assert len(changes)==1
-        param,change,opacity = changes[0]
-        self.showData(opacity=opacity)
 
-class ImageGrayLayer(LayerBase,LayerImageItem):
+class ImageGrayLayer(LayerImageItem,LayerBase):
 
 
     def __init__(self,name,layerViewer):
@@ -195,25 +171,13 @@ class ImageGrayLayer(LayerBase,LayerImageItem):
         self.addItem(self)
         self.preProcessedData = None
         self.cmappedData      = None
-
         #self.arrowItem = pg.ArrowItem(pos=(50.5,90),parent=self.imageItem,pxMode=False)
         #self.addItem(self.arrowItem)
         #self.arrowItem.hide()
         #self.arrowItem.show()
 
-
-        #Wprint "numitems",len(self.items)
     def checkData(self,data):
-        error = RuntimeError("ImageGrayLayer data must have 2 dimensions or 3 dimensions with shape[2]=1")
-        if data is None:
-            return
-        if data.ndim==3:
-            if data.shape[2]!=1:
-                raise error
-            return
-        if data.ndim!=2 :
-            raise error
-
+        InputCheck.grayImage(data)
 
     def setData(self,data=None):
         if data is None:
@@ -221,32 +185,9 @@ class ImageGrayLayer(LayerBase,LayerImageItem):
             return 
         else:
             self.data=data
-            self.preProcessData()
-            self.doColorMapping()
-            self.showData()
-
-    def doColorMapping(self,cmap=None):
-        if cmap is None:
-            cmap =self.getParamValue('ColorMap')
-
-        self.cmappedData  = cmap.map(self.preProcessedData)
-
-    def preProcessData(self):
-        """ rgb layer needs no preprocessing ?!?"""
-        self.preProcessedData=self.data.copy()
-        self.preProcessedData=np.squeeze(self.preProcessedData)
-        self.preProcessedData-=self.preProcessedData.min()
-        self.preProcessedData/=self.preProcessedData.max()
-
-    def showData(self,opacity=None):
-        """ this will make the data visible
-        """
-        if opacity is None:
-            opacity=self.getParamValue('Opacity')
-    
-        self.setImage(self.cmappedData,opacity=opacity)
-        #self.imageItem.update()
-        #self.viewBox.update()
+            self.preProcessedData   = norm01(np.squeeze(self.data))
+            self.cmappedData        = self.getParamValue('ColorMap').map(self.preProcessedData)
+            self.setImage(self.cmappedData,opacity=self.getParamValue('Opacity'))
 
     def controlTemplate(self):
         return [
@@ -255,93 +196,50 @@ class ImageGrayLayer(LayerBase,LayerImageItem):
         ] 
 
     def connectControls(self):
-        param = self.layerParameter.param('Opacity')
-        param.sigTreeStateChanged.connect(self.onOpacityChanged)
 
-        param = self.layerParameter.param('ColorMap')
-        param.sigTreeStateChanged.connect(self.onColorMapChanged)
+        def onOpacityChanged(param,changes):
+            assert len(changes)==1
+            param,change,opacity = changes[0]
+            self.setImage(self.cmappedData,opacity=opacity)
 
-    def onOpacityChanged(self,param,changes):
-        assert len(changes)==1
-        #print "arrorw..."
-        param,change,opacity = changes[0]
-        #self.arrowItem.setStyle(headLen=int(5*opacity)+1,
-        #   tipAngle=0, baseAngle=15, tailLen=10, tailWidth=3,pxMode=False
-        #)
-        self.showData(opacity=opacity)
+        def onColorMapChanged(param,changes):
+            assert len(changes)==1
+            param,change,cmap = changes[0]
+            self.cmappedData  = cmap.map(self.preProcessedData)
+            self.setImage(self.cmappedData,opacity=self.getParamValue('Opacity'))
 
-    def onColorMapChanged(self,param,changes):
-        assert len(changes)==1
-        param,change,cmap = changes[0]
-        self.doColorMapping(cmap=cmap)
-        self.showData()
+        self.connectParam('Opacity',onOpacityChanged)
+        self.connectParam('ColorMap',onColorMapChanged)
 
-class ImageMultiGrayLayer(LayerBase,LayerImageItem):
+
+
+class ImageMultiGrayLayer(LayerImageItem,LayerBase):
 
 
     def __init__(self,name,layerViewer):
         LayerBase.__init__(self,name,layerViewer)
         LayerImageItem.__init__(self,parent=self.layerView)
 
-
-        # add item to item(set)
         self.addItem(self)
-        
-
-
-        self.preProcessedData         = None
-        self.selectedChannelImg      = None
-        self.cmappedData              = None
+        self.preProcessedData   = None
+        self.selectedChannelImg = None
+        self.cmappedData         = None
 
     def checkData(self,data):
-        error = RuntimeError("ImageMultiGrayLayer data must have 3 dimensions")
-        if data is None:
-            return
-        if data.ndim!=3:
-            raise error
-
-
+        InputCheck.multiGrayImage(data)
 
     def setData(self,data=None):
         if data is None:
             self.removeItems()
             return 
         else:
-            self.data=data
-            self.preProcessData()
-            nChannels = self.data.shape[2]
-            self.selectedChannelImg=self.preProcessedData[:,:,self.getParamValue('Channel')]
-            self.layerParameter.param('Channel').setOpts(
-                name = 'Channel',
-                value =0 ,
-                limits=[0,nChannels-1]
-            )
-            
-            
-            self.doColorMapping()
-            self.showData()
-
-    def doColorMapping(self,cmap=None):
-        if cmap is None:
-            cmap =self.getParamValue('ColorMap')
-        self.cmappedData  = cmap.map(self.selectedChannelImg)
-
-
-    def preProcessData(self):
-        self.preProcessedData=self.data.copy()
-        for c in range(self.preProcessedData.shape[2]):
-            self.preProcessedData[:,:,c]-=self.preProcessedData[:,:,c].min()
-            self.preProcessedData[:,:,c]/=self.preProcessedData[:,:,c].max()
-
-    def showData(self,opacity=None):
-        """ this will make the data visible
-        """
-        if opacity is None:
-            opacity=self.getParamValue('Opacity')
+            self.layerParameter.param('Channel').setOpts(name = 'Channel',value =0 ,limits=[0,data.shape[2]-1])
+            self.data               = data
+            self.preProcessedData   = norm01(self.data,channelWise=True)
+            self.selectedChannelImg = self.preProcessedData[:,:,self.getParamValue('Channel')]
+            self.cmappedData        = self.getParamValue('ColorMap').map(self.selectedChannelImg)
+            self.setImage(self.cmappedData,opacity=self.getParamValue('Opacity'))
     
-        self.setImage(self.cmappedData,opacity=opacity)
-        #self.imageItem.update()
-        #self.viewBox.update()
 
     def controlTemplate(self):
         return [
@@ -351,38 +249,29 @@ class ImageMultiGrayLayer(LayerBase,LayerImageItem):
         ] 
 
     def connectControls(self):
-        param = self.layerParameter.param('Channel')
-        param.sigTreeStateChanged.connect(self.onChannelChanged)
 
-        param = self.layerParameter.param('ColorMap')
-        param.sigTreeStateChanged.connect(self.onColorMapChanged)
-
-        param = self.layerParameter.param('Opacity')
-        param.sigTreeStateChanged.connect(self.onOpacityChanged)
-
-
-
-    def onChannelChanged(self,param,changes):
-        if self.data is None:
-            return 
-        channel = self.getParamValue('Channel')
-        self.selectedChannelImg=self.preProcessedData[:,:,channel]
-
-        self.doColorMapping()
-        self.showData()
-
+        def onChannelChanged(param,changes):
+            if self.data is None :
+                return
+            channel                 = self.getParamValue('Channel')
+            self.selectedChannelImg = self.preProcessedData[:,:,channel]
+            self.cmappedData        = self.getParamValue('ColorMap').map(self.selectedChannelImg)
+            self.setImage(self.cmappedData,opacity=self.getParamValue('Opacity'))
     
-    def onColorMapChanged(self,param,changes):
-        assert len(changes)==1
-        param,change,cmap = changes[0]
-        self.doColorMapping(cmap=cmap)
-        self.showData()
+        def onColorMapChanged(param,changes):
+            assert len(changes)==1
+            param,change,cmap = changes[0]
+            self.cmappedData  = cmap.map(self.selectedChannelImg)
+            self.setImage(self.cmappedData,opacity=self.getParamValue('Opacity'))
 
-    def onOpacityChanged(self,param,changes):
-        assert len(changes)==1
-        param,change,opacity = changes[0]
-        self.showData(opacity=opacity)
+        def onOpacityChanged(param,changes):
+            assert len(changes)==1
+            param,change,opacity = changes[0]
+            self.setImage(self.cmappedData,opacity=opacity)
 
+        self.connectParam('Channel',onChannelChanged)
+        self.connectParam('Opacity',onOpacityChanged)
+        self.connectParam('ColorMap',onColorMapChanged)
 
 
 layerTypes['RgbLayer']=ImageRgbLayer

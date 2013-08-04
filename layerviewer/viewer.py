@@ -177,6 +177,8 @@ class LayerViewer(QtGui.QWidget):
 
     def setLayerData(self,name,data):
         layer = self.layers[name]
+        if data is  None:
+            return
         layer.checkData(data=data)
         layer.setData(data=data)
 
