@@ -4,12 +4,14 @@ import pyqtgraph as pg
 from collections import OrderedDict
 import pyqtgraph.parametertree.parameterTypes as pTypes
 from pyqtgraph.parametertree import Parameter, ParameterTree, ParameterItem, registerParameterType
-from helpers import setPolicy
-from abc import ABCMeta,abstractmethod
 
+from abc import ABCMeta,abstractmethod
+    
+from helpers    import setPolicy,permuteLabels
 from inputCheck import InputCheck
+from normalize  import norm01
 #from lazycall   import lazyCall
-from normalize import norm01
+
 
 
 class LayerBase(object):
@@ -123,11 +125,11 @@ layerTypes=dict()
 class LayerImageItem(pg.ImageItem):
     def __init__(self,*args,**kwargs):
         super(LayerImageItem,self).__init__(*args,**kwargs)
-
+    """
     def mouseClickEvent(self, ev):
         print type(self)
         print ev.pos()
-
+    """
 
 class ImageRgbLayer(LayerImageItem,LayerBase):
 
@@ -140,12 +142,8 @@ class ImageRgbLayer(LayerImageItem,LayerBase):
         InputCheck.colorImage(data)
 
     def setData(self,data=None):
-        if data is None:
-            self.removeItems()
-            return 
-        else:
-            self.data=data
-            self.setImage(self.data,opacity=self.getParamValue('Opacity'))
+        self.data=data
+        self.setImage(self.data,opacity=self.getParamValue('Opacity'))
 
     def controlTemplate(self):
         return [{'name': 'Opacity', 'type': 'float', 'value': 0.75, 'step': 0.1,'limits':[0,1]} ] 
@@ -158,7 +156,6 @@ class ImageRgbLayer(LayerImageItem,LayerBase):
             self.setImage(self.data,opacity=opacity)
 
         self.connectParam('Opacity',onOpacityChanged)
-
 
 
 class ImageGrayLayer(LayerImageItem,LayerBase):
@@ -180,14 +177,10 @@ class ImageGrayLayer(LayerImageItem,LayerBase):
         InputCheck.grayImage(data)
 
     def setData(self,data=None):
-        if data is None:
-            self.removeItems()
-            return 
-        else:
-            self.data=data
-            self.preProcessedData   = norm01(np.squeeze(self.data))
-            self.cmappedData        = self.getParamValue('ColorMap').map(self.preProcessedData)
-            self.setImage(self.cmappedData,opacity=self.getParamValue('Opacity'))
+        self.data=data
+        self.preProcessedData   = norm01(np.squeeze(self.data))
+        self.cmappedData        = self.getParamValue('ColorMap').map(self.preProcessedData)
+        self.setImage(self.cmappedData,opacity=self.getParamValue('Opacity'))
 
     def controlTemplate(self):
         return [
@@ -212,7 +205,6 @@ class ImageGrayLayer(LayerImageItem,LayerBase):
         self.connectParam('ColorMap',onColorMapChanged)
 
 
-
 class ImageMultiGrayLayer(LayerImageItem,LayerBase):
 
 
@@ -223,22 +215,18 @@ class ImageMultiGrayLayer(LayerImageItem,LayerBase):
         self.addItem(self)
         self.preProcessedData   = None
         self.selectedChannelImg = None
-        self.cmappedData         = None
+        self.cmappedData        = None
 
     def checkData(self,data):
         InputCheck.multiGrayImage(data)
 
     def setData(self,data=None):
-        if data is None:
-            self.removeItems()
-            return 
-        else:
-            self.layerParameter.param('Channel').setOpts(name = 'Channel',value =0 ,limits=[0,data.shape[2]-1])
-            self.data               = data
-            self.preProcessedData   = norm01(self.data,channelWise=True)
-            self.selectedChannelImg = self.preProcessedData[:,:,self.getParamValue('Channel')]
-            self.cmappedData        = self.getParamValue('ColorMap').map(self.selectedChannelImg)
-            self.setImage(self.cmappedData,opacity=self.getParamValue('Opacity'))
+        self.layerParameter.param('Channel').setOpts(name = 'Channel',value =0 ,limits=[0,data.shape[2]-1])
+        self.data               = data
+        self.preProcessedData   = norm01(self.data,channelWise=True)
+        self.selectedChannelImg = self.preProcessedData[:,:,self.getParamValue('Channel')]
+        self.cmappedData        = self.getParamValue('ColorMap').map(self.selectedChannelImg)
+        self.setImage(self.cmappedData,opacity=self.getParamValue('Opacity'))
     
 
     def controlTemplate(self):
@@ -274,6 +262,69 @@ class ImageMultiGrayLayer(LayerImageItem,LayerBase):
         self.connectParam('ColorMap',onColorMapChanged)
 
 
+class SegmentationLayer(LayerImageItem,LayerBase):
+
+
+    def __init__(self,name,layerViewer):
+        LayerBase.__init__(self,name,layerViewer)
+        LayerImageItem.__init__(self,parent=self.layerView)
+
+        self.addItem(self)
+        self.preProcessedData = None
+        self.cmappedData      = None
+
+
+    def checkData(self,data):
+        InputCheck.grayImage(data)
+
+    def setData(self,data=None):
+        self.data=data
+        self.preProcessedData   = norm01(np.require( permuteLabels(self.data),dtype=np.float32 ) )
+        self.cmappedData        = self.getParamValue('ColorMap').map(self.preProcessedData)
+        self.setImage(self.cmappedData,opacity=self.getParamValue('Opacity'))
+
+    def controlTemplate(self):
+        return [
+            {'name': 'ColorMap', 'type': 'colormap'},
+            {'name': 'Opacity', 'type': 'float', 'value': 0.75, 'step': 0.1,'limits':[0,1]} 
+        ] 
+
+    def connectControls(self):
+
+        def onOpacityChanged(param,changes):
+            assert len(changes)==1
+            param,change,opacity = changes[0]
+            self.setImage(self.cmappedData,opacity=opacity)
+
+        def onColorMapChanged(param,changes):
+            assert len(changes)==1
+            param,change,cmap = changes[0]
+            self.cmappedData  = cmap.map(self.preProcessedData)
+            self.setImage(self.cmappedData,opacity=self.getParamValue('Opacity'))
+
+        self.connectParam('Opacity',onOpacityChanged)
+        self.connectParam('ColorMap',onColorMapChanged)
+
+
+    def mouseClickEvent(self, ev):
+        pos = ev.pos()
+        label = self.data[pos[0],pos[1]]
+        self.segClicked(label,ev)
+
+
+    def segClicked(self,label,ev):
+        print "label %d clicked"%label
+
+
+
+class PixelLabelLayer(LayerImageItem,LayerBase):
+    pass
+
+
+
+
+
 layerTypes['RgbLayer']=ImageRgbLayer
 layerTypes['GrayLayer']=ImageGrayLayer
 layerTypes['MultiGrayLayer']=ImageMultiGrayLayer
+layerTypes['SegmentationLayer']=SegmentationLayer

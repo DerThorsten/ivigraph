@@ -20,21 +20,30 @@ app = QtGui.QApplication([])
 viewer =  lv.LayerViewer()
 viewer.show()
 
-rgbImg = vigra.readImage('/home/tbeier/Desktop/lena.bmp')#[:,:,:]
-viewer.addLayer(name='rgb',layerType='RgbLayer')
-viewer.setLayerData(name='rgb',data=rgbImg)
+rgbImg   = vigra.readImage('/home/tbeier/Desktop/lena.bmp')
+gradMag  = vigra.filters.gaussianGradientMagnitude(rgbImg,3.5)
+seg,nSeg = vigra.analysis.watersheds(gradMag) 
 
 
-
-gray = vigra.filters.gaussianGradientMagnitude(rgbImg,1.5)
-viewer.addLayer(name='gray',layerType='GrayLayer')
-viewer.setLayerData(name='gray',data=gray)
+print seg,nSeg
 
 
+# rgb layer
+viewer.addLayer(name='Rgb',layerType='RgbLayer')
+viewer.setLayerData(name='Rgb',data=rgbImg)
+
+# gray layer
+viewer.addLayer(name='GradMag',layerType='GrayLayer')
+viewer.setLayerData(name='GradMag',data=gradMag)
 
 
-viewer.addLayer(name='mgray',layerType='MultiGrayLayer')
-viewer.setLayerData(name='mgray',data=rgbImg)
+# seg layer
+viewer.addLayer(name='SuperPixels',layerType='SegmentationLayer')
+viewer.setLayerData(name='SuperPixels',data=seg)
+
+
+#viewer.addLayer(name='mgray',layerType='MultiGrayLayer')
+#viewer.setLayerData(name='mgray',data=rgbImg)
 
 
 viewer.autoRange()
