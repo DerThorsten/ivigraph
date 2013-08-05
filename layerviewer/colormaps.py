@@ -6,6 +6,9 @@ _predefColormaps = pg.graphicsItems.GradientEditorItem.Gradients
 del _predefColormaps['spectrum']
 del _predefColormaps['cyclic']
 
+_predefColormaps['alphaGrey']={'ticks': [(0.0, (0, 0, 0, 0)), (1.0, (255, 255, 255, 255))], 'mode': 'rgb'}
+
+
 def getColormap(name):
     global _predefColormaps
     rcm  = _predefColormaps[name]

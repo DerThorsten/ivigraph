@@ -14,7 +14,7 @@ from colormaps  import getColormap
 #from lazycall   import lazyCall
 
 
-
+import random
 
 
 #del grads['gray']
@@ -277,13 +277,14 @@ class SegmentationLayer(LayerImageItem,LayerBase):
         self.addItem(self)
         self.preProcessedData = None
         self.cmappedData      = None
-
+        self.whereLabelsDict  = dict()
 
     def checkData(self,data):
         InputCheck.grayImage(data)
 
     def setData(self,data=None):
-        self.data=data
+        self.whereLabelsDict  = dict()
+        self.data=np.squeeze(data)
         self.preProcessedData   = norm01(np.require( permuteLabels(self.data),dtype=np.float32 ) )
 
         self.cmappedData = self.getParamValue('ColorMap').map(self.preProcessedData)
@@ -326,12 +327,31 @@ class SegmentationLayer(LayerImageItem,LayerBase):
 
     def mouseClickEvent(self, ev):
         pos = ev.pos()
-        label = self.data[pos[0],pos[1]]
+        label = int(self.data[pos[0],pos[1]])
         self.segClicked(label,ev)
 
-
     def segClicked(self,label,ev):
-        print "label %d clicked"%label
+        pos = ev.pos()
+        if label in self.whereLabelsDict:
+            whereLabel=self.whereLabelsDict[label]
+        else:
+            whereLabel      = np.where(self.data==label)
+            self.whereLabelsDict[label]=whereLabel
+
+    
+        oldVal = self.preProcessedData[pos[0],pos[1]] 
+        newVal = random.random()
+        self.preProcessedData[whereLabel] = newVal
+        self.cmappedData  = self.getParamValue('ColorMap').map(self.preProcessedData)
+        self.setImage(self.cmappedData,opacity=self.getParamValue('Opacity'))
+
+
+
+
+    def mouseMoveEvent(self, ev):
+        print "mouse move", ev.pos()
+        #if self.drawKernel is not None:
+            #self.drawAt(ev.pos(), ev)
 
 
 
