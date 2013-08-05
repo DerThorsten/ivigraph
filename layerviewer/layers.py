@@ -10,9 +10,14 @@ from abc import ABCMeta,abstractmethod
 from helpers    import setPolicy,permuteLabels
 from inputCheck import InputCheck
 from normalize  import norm01
+from colormaps  import getColormap
 #from lazycall   import lazyCall
 
 
+
+
+
+#del grads['gray']
 
 class LayerBase(object):
     #__metaclass__ = ABCMeta
@@ -184,7 +189,7 @@ class ImageGrayLayer(LayerImageItem,LayerBase):
 
     def controlTemplate(self):
         return [
-            {'name': 'ColorMap', 'type': 'colormap'},
+            {'name': 'ColorMap', 'type': 'colormap','value':getColormap('flame')},
             {'name': 'Opacity', 'type': 'float', 'value': 0.75, 'step': 0.1,'limits':[0,1]} 
         ] 
 
@@ -232,7 +237,7 @@ class ImageMultiGrayLayer(LayerImageItem,LayerBase):
     def controlTemplate(self):
         return [
             {'name': 'Channel', 'type': 'int','value':0},
-            {'name': 'ColorMap', 'type': 'colormap'},
+            {'name': 'ColorMap', 'type': 'colormap','value':getColormap('flame') },
             {'name': 'Opacity', 'type': 'float', 'value': 0.75, 'step': 0.1,'limits':[0,1]} 
         ] 
 
@@ -280,12 +285,25 @@ class SegmentationLayer(LayerImageItem,LayerBase):
     def setData(self,data=None):
         self.data=data
         self.preProcessedData   = norm01(np.require( permuteLabels(self.data),dtype=np.float32 ) )
-        self.cmappedData        = self.getParamValue('ColorMap').map(self.preProcessedData)
+
+        self.cmappedData = self.getParamValue('ColorMap').map(self.preProcessedData)
         self.setImage(self.cmappedData,opacity=self.getParamValue('Opacity'))
 
     def controlTemplate(self):
+        """
+        grads = pg.graphicsItems.GradientEditorItem.Gradients
+        print grads.keys()
+
+        gradEdit = pg.GradientEditorItem()
+        gradEdit.restoreState(grads['bipolar'])
+        cm = gradEdit.colorMap()
+
+        del grads['spectrum']
+        del grads['cyclic']
+        """
+
         return [
-            {'name': 'ColorMap', 'type': 'colormap'},
+            {'name': 'ColorMap', 'type': 'colormap','value':getColormap('bipolar')  },
             {'name': 'Opacity', 'type': 'float', 'value': 0.75, 'step': 0.1,'limits':[0,1]} 
         ] 
 
